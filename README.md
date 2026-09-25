@@ -43,6 +43,72 @@ c) Tabla de Ubigeos del Perú al 2021. Fuente: Datos abiertos. https://www.datos
 
 # 6. Marco teórico
 
+## 6.1 Business Intelligence y data warehousing
+
+### 6.1.1 Business Intelligence
+
+Se define como el conjunto de sistemas que combinan la recolección, el almacenamiento y la gestión del conocimiento con herramientas analíticas, con el fin de presentar información compleja a los tomadores de decisiones (Negash, 2004).
+En este proyecto, BI se aplica sobre la información presupuestal publicada por el Ministerio de Economía y Finanzas (MEF) para fines comparativos. 
+
+### 6.1.2 Data warehouse
+
+Es una colección de datos orientada a temas, integrada, no volátil y variante en el tiempo, que sirve de soporte a la toma de decisiones (Inmon, 2005). A diferencia de los sistemas transaccionales (OLTP), optimizados para registrar operaciones individuales, el *data warehouse* está diseñado para consultas analíticas que agregan grandes volúmenes de datos históricos (Chaudhuri & Dayal, 1997).
+
+### 6.1.3 Modelamiento dimensional
+
+Organiza los datos en dos tipos de tablas: las **tablas de hechos**, que almacenan las mediciones numéricas de un proceso de negocio, y las **tablas de dimensiones**, que contienen el contexto descriptivo de esas mediciones: quién, qué, dónde, cuándo y cómo (Kimball & Ross, 2013).
+
+## 6.2 Presupuesto público del Perú
+
+### 6.2.1 Sistema Nacional de Presupuesto Público
+ 
+Es el conjunto de normas, procesos e instituciones que organiza cómo el Estado peruano asigna, ejecuta y evalúa el uso de sus recursos. Está regulado por el Decreto Legislativo N.° 1440, y su ente rector es la Dirección General de Presupuesto Público del MEF, encargada de fijar las reglas y los clasificadores que todas las entidades deben aplicar (Decreto Legislativo N.° 1440, 2018).
+
+### 6.2.2 Sistema Integrado de Administración Financiera (SIAF)
+ 
+Es el sistema informático del MEF en el que todas las entidades públicas registran la programación y la ejecución de su presupuesto. Funciona como el sistema transaccional de las finanzas públicas, y los datos abiertos que publica el MEF provienen de él.
+
+### 6.2.3 Pliego y unidad ejecutora
+ 
+El pliego es la entidad pública a la que se le aprueba un presupuesto, como un ministerio, un gobierno regional o una municipalidad. La unidad ejecutora es la dependencia dentro del pliego que administra directamente los recursos, y es el nivel más detallado en el que se registra la ejecución (Decreto Legislativo N.° 1440, 2018).
+ 
+### 6.2.4 Presupuesto Institucional de Apertura (PIA)
+ 
+Es el presupuesto aprobado para una entidad al inicio del año fiscal, tanto en ingresos como en gastos (Decreto Legislativo N.° 1440, 2018).
+ 
+### 6.2.5 Presupuesto Institucional Modificado (PIM)
+ 
+Es el presupuesto actualizado de una entidad, que resulta de sumar al PIA las modificaciones aprobadas durante el año, como transferencias o créditos adicionales (Decreto Legislativo N.° 1440, 2018). Representa los recursos con los que la entidad realmente cuenta, por lo que es la referencia habitual para evaluar su gestión.
+ 
+### 6.2.6 Devengado
+ 
+Es la fase de ejecución del gasto en la que se reconoce la obligación de pagar, una vez que la entidad ha recibido conforme el bien o servicio adquirido. Es precedida por la certificación (reserva del presupuesto) y el compromiso (acuerdo del gasto con el proveedor) (Decreto Legislativo N.° 1440, 2018). Se considera la medida estándar de ejecución presupuestal, porque indica que el gasto ya se concretó.
+ 
+### 6.2.7 Girado
+ 
+Es la fase final de ejecución del gasto, en la que se emite el pago y se cancela la obligación reconocida en el devengado.
+ 
+### 6.2.8 Avance de ejecución
+ 
+Es el indicador que mide qué proporción de su presupuesto ha gastado una entidad. Se calcula como el cociente entre el monto devengado y el PIM.
+ 
+### 6.2.9 Recaudado
+ 
+Es el monto de ingresos que una entidad efectivamente percibe en un periodo, ya sea por impuestos, tasas, transferencias u otras fuentes.
+ 
+### 6.2.10 Fuente de financiamiento y rubro
+ 
+Son las categorías que identifican el origen de los recursos públicos. La fuente agrupa los recursos según su procedencia general (por ejemplo, recursos ordinarios o recursos determinados), y el rubro la desagrega (por ejemplo, canon y sobrecanon, regalías, renta de aduanas y participaciones) (Decreto Legislativo N.° 1440, 2018).
+ 
+### 6.2.11 Clasificadores económicos de ingresos y gastos
+ 
+Son catálogos jerárquicos definidos por el MEF que agrupan los ingresos según su naturaleza (por ejemplo, impuestos o transferencias) y los gastos según el tipo de bien o servicio adquirido (por ejemplo, planillas, bienes y servicios u obras).
+ 
+### 6.2.12 Clasificación funcional y estructura programática
+ 
+La clasificación funcional agrupa el gasto según las grandes áreas de acción del Estado, como educación, salud o transporte. La estructura programática lo vincula con los programas presupuestales, productos y proyectos a los que se destina. Ambas convergen en la **meta presupuestal**, que es la unidad mínima de programación del gasto dentro de una entidad.
+
+
 
 # 7. Modelamiento multidimensional
 
@@ -184,3 +250,15 @@ La tabla de hechos de gasto almacena los montos presupuestados y ejecutados por 
 ## Diseño del Data Warehouse
 
 ![Modelo multidimensional](modelo_datawarehouse.png)
+
+## Referencias
+
+Chaudhuri, S., & Dayal, U. (1997). An overview of data warehousing and OLAP technology. *ACM SIGMOD Record, 26*(1), 65–74. https://doi.org/10.1145/248603.248616
+
+Decreto Legislativo N.° 1440. (2018, 16 de septiembre). Decreto Legislativo del Sistema Nacional de Presupuesto Público. *Diario Oficial El Peruano*.
+
+Inmon, W. H. (2005). *Building the data warehouse* (4.ª ed.). Wiley.
+
+Kimball, R., & Ross, M. (2013). *The data warehouse toolkit: The definitive guide to dimensional modeling* (3.ª ed.). Wiley.
+
+Negash, S. (2004). Business intelligence. *Communications of the Association for Information Systems, 13*, 177–195. https://doi.org/10.17705/1CAIS.01315
