@@ -41,153 +41,128 @@ A continuación, se presenta la descripción de las tablas que conforman el mode
 
 ### DIM_TIEMPO
  
-La dimensión tiempo almacena la información temporal asociada a los registros de ingreso y gasto. Su granularidad es mensual, en concordancia con la frecuencia de publicación de los datos del MEF, y permite realizar análisis de evolución y acumulados a lo largo del año fiscal.
+La dimensión tiempo almacena la información temporal asociada a los registros de ingreso y gasto. Su granularidad es mensual, en concordancia con la frecuencia de publicación de los datos del MEF, y permite realizar análisis de evolución y acumulados a lo largo del año fiscal. En el gasto corresponde al periodo de ejecución del presupuesto; en el ingreso, al periodo del documento de recaudación.
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
 | sk_tiempo | INT | Identificador único de la dimensión tiempo (clave subrogada). |
-| anio | INT | Año fiscal al que corresponde el registro. |
-| mes | INT | Número del mes del registro (1–12). El valor 0 corresponde al registro de apertura presupuestal. |
+| anio | INT | Año de ejecución del presupuesto (gasto) o año del documento en que se realizó la recaudación (ingreso). Origen: `ANO_EJE` / `ANO_DOC`. |
+| mes | INT | Mes de ejecución del presupuesto (gasto) o mes del documento de recaudación (ingreso), del 1 al 12. Origen: `MES_EJE` / `MES_DOC`. |
  
 ---
  
 ### DIM_ENTIDAD
-  
-La dimensión entidad almacena la información de las instituciones públicas que registran ingresos y ejecutan gasto. Su nivel de detalle es la unidad ejecutora, que es la instancia que administra directamente los recursos dentro de un pliego presupuestal.
+ 
+La dimensión entidad almacena la información de las instituciones públicas que recaudan ingresos y ejecutan gasto. Su nivel de detalle es la unidad ejecutora, identificada por el MEF mediante un código secuencial único (`SEC_EJEC`), y se organiza jerárquicamente dentro de un pliego presupuestal.
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
-| sk_entidad | INT | Identificador único de la dimensión entidad (clave subrogada). |
-| pliego | VARCHAR(150) | Nombre del pliego presupuestal al que pertenece la unidad ejecutora (por ejemplo, un ministerio, gobierno regional o municipalidad). |
-| ejecutora | VARCHAR(150) | Nombre de la unidad ejecutora responsable de la recaudación o del gasto. |
+| sk_entidad | INT | Identificador único de la dimensión entidad (clave subrogada). Se genera a partir del código que identifica a la entidad. Origen: `SEC_EJEC`. |
+| pliego | VARCHAR(150) | Descripción del pliego al que pertenece la entidad (por ejemplo, un ministerio, gobierno regional o municipalidad). Origen: `PLIEGO_NOMBRE`. |
+| ejecutora | VARCHAR(150) | Nombre de la entidad o unidad ejecutora responsable de la recaudación o del gasto. Origen: `EJECUTORA_NOMBRE`. |
  
 ---
  
 ### DIM_UBIGEO
  
-La dimensión ubigeo almacena la información geográfica según la división político-administrativa del Perú. Cumple un doble rol en el modelo: identifica la ubicación de la unidad ejecutora y, en el caso del gasto, la ubicación donde se ejecuta la meta presupuestal.
+La dimensión ubigeo almacena la información geográfica del lugar donde se ubica la entidad, según la división político-administrativa del Perú.
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
 | sk_ubigeo | INT | Identificador único de la dimensión ubigeo (clave subrogada). |
-| departamento | VARCHAR(50) | Nombre del departamento. |
-| provincia | VARCHAR(50) | Nombre de la provincia. |
-| distrito | VARCHAR(50) | Nombre del distrito. |
+| departamento | VARCHAR(50) | Nombre del departamento donde se ubica la entidad. Origen: `DEPARTAMENTO_EJECUTORA_NOMBRE`. |
+| provincia | VARCHAR(50) | Nombre de la provincia del departamento donde se ubica la entidad. Origen: `PROVINCIA_EJECUTORA_NOMBRE`. |
+| distrito | VARCHAR(50) | Nombre del distrito de la provincia del departamento donde se ubica la entidad. Origen: `DISTRITO_EJECUTORA_NOMBRE`. |
  
 ---
  
 ### DIM_FINANCIAMIENTO
  
-La dimensión financiamiento almacena el origen de los recursos públicos. Es una dimensión conformada que permite comparar, para una misma fuente, cuánto se recaudó y cuánto se gastó; por ejemplo, en el rubro de canon y sobrecanon.
+La dimensión financiamiento almacena el origen de los recursos públicos, organizado en tres niveles: fuente de financiamiento, rubro y tipo de recurso. Es una dimensión conformada que permite comparar, para un mismo rubro, cuánto se recaudó y cuánto se gastó.
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
 | sk_financiamiento | INT | Identificador único de la dimensión financiamiento (clave subrogada). |
-| fuente | VARCHAR(100) | Fuente de financiamiento (Recursos Ordinarios, Recursos Directamente Recaudados, Recursos por Operaciones Oficiales de Crédito, Donaciones y Transferencias, Recursos Determinados). |
-| rubro | VARCHAR(100) | Rubro de financiamiento, que desagrega la fuente (por ejemplo, Canon y sobrecanon, regalías, renta de aduanas y participaciones). |
-| tipo_recurso | VARCHAR(150) | Tipo de recurso específico dentro del rubro. |
+| fuente | VARCHAR(100) | Descripción de la fuente de financiamiento, que agrupa a uno o más rubros (Recursos Ordinarios, Recursos Directamente Recaudados, Recursos por Operaciones Oficiales de Crédito, Donaciones y Transferencias, Recursos Determinados). Origen: `FUENTE_FINANCIAMIENTO_NOMBRE`. |
+| rubro | VARCHAR(100) | Descripción del rubro que puede utilizar la entidad, es decir, de dónde provienen los recursos (por ejemplo, Canon y sobrecanon, regalías, renta de aduanas y participaciones). Origen: `RUBRO_NOMBRE`. |
+| tipo_recurso | VARCHAR(150) | Descripción del tipo de recurso, que desagrega el rubro. Origen: `TIPO_RECURSO_NOMBRE`. |
  
 ---
  
 ### DIM_CLASIF_INGRESO
-
-La dimensión clasificador de ingreso almacena la clasificación económica de los ingresos según el Clasificador de Ingresos del MEF. Permite identificar la naturaleza de cada ingreso, como impuestos, transferencias, endeudamiento o saldos de balance.
+ 
+La dimensión clasificador de ingreso almacena la clasificación económica de los recursos que se recaudan, captan u obtienen, según el Clasificador de Ingresos del MEF. Permite identificar la naturaleza de cada ingreso, como impuestos, transferencias, endeudamiento o saldos de balance.
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
-| sk_clasif_ingreso | INT | Identificador único de la dimensión clasificador de ingreso (clave subrogada). |
-| generica | VARCHAR(100) | Genérica de ingreso, el nivel más agregado del clasificador (por ejemplo, Impuestos y contribuciones obligatorias, Saldos de balance). |
-| especifica_det | VARCHAR(200) | Específica de ingreso a nivel de detalle, el nivel más desagregado del clasificador. |
+| sk_clasif_ingreso | INT | Identificador único de la dimensión clasificador de ingreso (clave subrogada). Se genera a partir de la combinación de los códigos de genérica, subgenérica, subgenérica detalle, específica y específica detalle. |
+| generica | VARCHAR(100) | Genérica de ingreso, el mayor nivel de agregación de los clasificadores de ingreso (por ejemplo, Impuestos y contribuciones obligatorias, Saldos de balance). Origen: `GENERICA_NOMBRE`. |
+| especifica_det | VARCHAR(200) | Específica detalle, el nivel de agregación más específico y detallado que identifica y clasifica los recursos. Origen: `ESPECIFICA_DET_NOMBRE`. |
  
 ---
  
 ### DIM_CLASIF_GASTO
-  
+ 
 La dimensión clasificador de gasto almacena la clasificación económica del gasto según el Clasificador de Gastos del MEF. Permite identificar en qué se utilizan los recursos, como planillas, bienes y servicios o inversión en activos.
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
-| sk_clasif_gasto | INT | Identificador único de la dimensión clasificador de gasto (clave subrogada). |
-| generica | VARCHAR(100) | Genérica de gasto, el nivel más agregado del clasificador (por ejemplo, Personal y obligaciones sociales, Bienes y servicios, Adquisición de activos no financieros). |
-| especifica_det | VARCHAR(200) | Específica de gasto a nivel de detalle, el nivel más desagregado del clasificador. |
+| sk_clasif_gasto | INT | Identificador único de la dimensión clasificador de gasto (clave subrogada). Se genera a partir de la combinación de los códigos de genérica, subgenérica, subgenérica detalle, específica y específica detalle. |
+| generica | VARCHAR(100) | Genérica de gasto, el mayor nivel de agregación de los clasificadores de gasto (por ejemplo, Personal y obligaciones sociales, Bienes y servicios, Adquisición de activos no financieros). Origen: `GENERICA_NOMBRE`. |
+| especifica_det | VARCHAR(200) | Específica de nivel 2, que identifica el detalle del gasto. Es el nivel más desagregado del clasificador. Origen: `ESPECIFICA_DET_NOMBRE`. |
  
 ---
  
 ### DIM_FUNCIONAL
-  
-La dimensión funcional almacena la clasificación funcional del gasto, que agrupa las acciones del Estado según las grandes áreas de intervención pública. Permite analizar la orientación del gasto hacia sectores como educación, salud o transporte.
+ 
+La dimensión funcional almacena las metas presupuestales junto con su clasificación funcional y programática. Su granularidad es la meta, que es la unidad mínima de programación del gasto dentro de cada entidad y se identifica por la combinación de la entidad (`SEC_EJEC`) y el código de meta (`SEC_FUNC`).
+ 
+Esta dimensión desnormaliza dos clasificaciones del gasto: la funcional (función → división funcional → grupo funcional) y la programática (producto o proyecto → actividad, acción de inversión u obra). Ambas se integran en una sola tabla porque convergen en la meta: según el MEF, cada meta corresponde a una combinación única de función, división funcional, grupo funcional, producto o proyecto y actividad, diferenciada por su finalidad.
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
-| sk_funcional | INT | Identificador único de la dimensión funcional (clave subrogada). |
-| funcion | VARCHAR(100) | Función del Estado a la que se orienta el gasto (por ejemplo, Educación, Salud, Transporte). |
-| grupo_funcional | VARCHAR(150) | Grupo funcional, el nivel más desagregado de la clasificación funcional. |
- 
----
- 
-### DIM_PROGRAMA
- 
-La dimensión programa almacena la estructura programática del gasto. Permite vincular la ejecución con los programas presupuestales orientados a resultados y distinguir entre productos (gasto operativo) y proyectos (inversión).
- 
-| Nombre de columna | Tipo de dato | Descripción |
-|---|---|---|
-| sk_programa | INT | Identificador único de la dimensión programa (clave subrogada). |
-| programa_ppto | VARCHAR(200) | Programa presupuestal al que se asigna el gasto, o la categoría de acciones centrales o asignaciones que no resultan en productos. |
-| producto_proyecto | VARCHAR(250) | Producto o proyecto de inversión al que se destina el gasto. |
- 
----
- 
-### DIM_META
- 
- 
-La dimensión meta almacena las metas presupuestales, que son la unidad mínima de programación del gasto dentro de cada unidad ejecutora. Incluye además la categoría de gasto, que distingue entre gasto corriente, gasto de capital y servicio de la deuda.
- 
-| Nombre de columna | Tipo de dato | Descripción |
-|---|---|---|
-| sk_meta | INT | Identificador único de la dimensión meta (clave subrogada). |
-| meta | VARCHAR(250) | Nombre de la meta presupuestal. |
-| categoria_gasto | VARCHAR(50) | Categoría del gasto: Gastos corrientes, Gastos de capital o Servicio de la deuda. |
+| sk_funcional | INT | Identificador único de la dimensión funcional (clave subrogada). Se genera a partir de la combinación de `SEC_EJEC` y `SEC_FUNC`. |
+| funcion | VARCHAR(100) | Función, el nivel máximo de agregación de las acciones orientadas a la ejecución de un determinado tema (por ejemplo, Educación, Salud, Transporte). Origen: `FUNCION_NOMBRE`. |
+| division_funcional | VARCHAR(150) | División funcional, el nivel intermedio de agregación de las acciones orientadas a la ejecución de un determinado tema. Origen: `DIVISION_FUNCIONAL_NOMBRE`. |
+| grupo_funcional | VARCHAR(150) | Grupo funcional, el tercer y más desagregado nivel de la clasificación funcional. Origen: `GRUPO_FUNCIONAL_NOMBRE`. |
+| proyecto | VARCHAR(250) | Descripción del producto o proyecto al que se destina el gasto. Origen: `PRODUCTO_PROYECTO_NOMBRE`. |
+| inversion | VARCHAR(250) | Descripción de la actividad, acción de inversión u obra que se ejecuta. Origen: `ACTIVIDAD_ACCION_OBRA_NOMBRE`. |
+| meta | VARCHAR(250) | Descripción de la finalidad de la meta presupuestal. Origen: `META_NOMBRE`. |
  
 ---
  
 ### FACT_INGRESO
  
- 
-La tabla de hechos de ingreso almacena los montos presupuestados y recaudados por las entidades públicas. Su granularidad es un registro por mes, entidad, ubicación, fuente de financiamiento y clasificador de ingreso.
+La tabla de hechos de ingreso almacena los montos presupuestados y recaudados por las entidades públicas. Su granularidad es un registro por mes de documento, entidad, ubicación, fuente de financiamiento y clasificador de ingreso.
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
-| sk_tiempo | INT | Clave foránea a `DIM_TIEMPO`. Mes en que se registra el ingreso. |
-| sk_entidad | INT | Clave foránea a `DIM_ENTIDAD`. Unidad ejecutora que percibe el ingreso. |
-| sk_ubigeo | INT | Clave foránea a `DIM_UBIGEO`. Ubicación de la unidad ejecutora. |
+| sk_tiempo | INT | Clave foránea a `DIM_TIEMPO`. Mes del documento en que se realizó la recaudación. |
+| sk_entidad | INT | Clave foránea a `DIM_ENTIDAD`. Entidad que recauda el ingreso. |
+| sk_ubigeo | INT | Clave foránea a `DIM_UBIGEO`. Ubicación de la entidad. |
 | sk_financiamiento | INT | Clave foránea a `DIM_FINANCIAMIENTO`. Fuente, rubro y tipo de recurso del ingreso. |
 | sk_clasif_ingreso | INT | Clave foránea a `DIM_CLASIF_INGRESO`. Clasificación económica del ingreso. |
-| monto_pia | DECIMAL(18,2) | Presupuesto Institucional de Apertura: ingreso estimado aprobado al inicio del año fiscal, en soles. |
-| monto_pim | DECIMAL(18,2) | Presupuesto Institucional Modificado: ingreso estimado actualizado tras las modificaciones presupuestales del periodo, en soles. |
-| monto_recaudado | DECIMAL(18,2) | Monto efectivamente recaudado o percibido por la entidad en el periodo, en soles. |
+| monto_pia | FLOAT | Monto asignado del Presupuesto Institucional de Apertura (PIA), en soles. Se registra íntegramente en el mes 1. Origen: `MONTO_PIA`. |
+| monto_pim | FLOAT | Monto del Presupuesto Institucional Modificado (PIM), en soles. En el ingreso se registra como modificación del periodo, por lo que su suma acumulada equivale al PIM vigente. Origen: `MONTO_PIM`. |
+| monto_recaudado | FLOAT | Monto total de la fase Recaudado, por año de documento, en soles. Origen: `MONTO_RECAUDADO`. |
  
 ---
  
 ### FACT_GASTO
  
- 
-La tabla de hechos de gasto almacena los montos presupuestados y ejecutados por las entidades públicas en sus distintas fases. Su granularidad es un registro por mes, entidad, ubicación, fuente de financiamiento, clasificador de gasto, función, programa y meta.
+La tabla de hechos de gasto almacena los montos presupuestados y ejecutados por las entidades públicas en sus distintas fases. Su granularidad es un registro por mes de ejecución, entidad, ubicación, fuente de financiamiento, clasificador de gasto y meta presupuestal.
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
-| sk_tiempo | INT | Clave foránea a `DIM_TIEMPO`. Mes en que se registra el gasto. |
-| sk_entidad | INT | Clave foránea a `DIM_ENTIDAD`. Unidad ejecutora que realiza el gasto. |
-| sk_ubigeo_ejec | INT | Clave foránea a `DIM_UBIGEO` (rol: ubicación de la ejecutora). Ubicación de la sede de la unidad ejecutora. |
-| sk_ubigeo_meta | INT | Clave foránea a `DIM_UBIGEO` (rol: ubicación de la meta). Departamento donde se ejecuta la meta presupuestal. |
+| sk_tiempo | INT | Clave foránea a `DIM_TIEMPO`. Mes de ejecución del presupuesto. |
+| sk_entidad | INT | Clave foránea a `DIM_ENTIDAD`. Entidad que ejecuta el gasto. |
+| sk_ubigeo_ejec | INT | Clave foránea a `DIM_UBIGEO`. Ubicación de la entidad que ejecuta el gasto. |
 | sk_financiamiento | INT | Clave foránea a `DIM_FINANCIAMIENTO`. Fuente, rubro y tipo de recurso que financia el gasto. |
 | sk_clasif_gasto | INT | Clave foránea a `DIM_CLASIF_GASTO`. Clasificación económica del gasto. |
-| sk_funcional | INT | Clave foránea a `DIM_FUNCIONAL`. Área de intervención del Estado a la que se orienta el gasto. |
-| sk_programa | INT | Clave foránea a `DIM_PROGRAMA`. Programa presupuestal y producto o proyecto asociado. |
-| sk_meta | INT | Clave foránea a `DIM_META`. Meta presupuestal y categoría del gasto. |
-| monto_pim | DECIMAL(18,2) | Presupuesto Institucional Modificado: presupuesto de gasto vigente tras las modificaciones realizadas durante el año, en soles. |
-| monto_devengado | DECIMAL(18,2) | Monto devengado: obligación de pago reconocida tras la conformidad del bien o servicio recibido. Es la medida estándar de ejecución del gasto, en soles. |
-| monto_girado | DECIMAL(18,2) | Monto girado: pago efectivamente emitido a favor del acreedor, en soles. |
-
+| sk_funcional | INT | Clave foránea a `DIM_FUNCIONAL`. Meta presupuestal, con su clasificación funcional y programática. |
+| monto_pim | FLOAT | Monto del Presupuesto Institucional Modificado (PIM), en soles. Se registra en el mes 0 (apertura) y refleja el presupuesto vigente tras las modificaciones del año. Origen: `MONTO_PIM`. |
+| monto_devengado | FLOAT | Monto ejecutado en la fase Devengado, en soles: obligación de pago reconocida tras la conformidad del bien o servicio recibido. Es la medida estándar de ejecución del gasto. Origen: `MONTO_DEVENGADO`. |
+| monto_girado | FLOAT | Monto ejecutado en la fase Girado, en soles: pago efectivamente emitido a favor del acreedor. Origen: `MONTO_GIRADO`. |
 
 
 ## Diseño del Data Warehouse
