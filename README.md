@@ -44,13 +44,30 @@ Esto afecta tanto a funcionarios públicos, que necesitan comparar su ejecución
 
 Este proyecto busca cubrir ese vacío: un modelo dimensional que integre ingreso, gasto y territorio en una sola estructura, listo para visualizar y comparar ambos lados del presupuesto a la granularidad que el usuario elija.
 
+
+
 # 5. Objetivos
 
 ## Objetivo general
 
 
+Diseñar e implementar una solución de almacenamiento y análisis de datos que integre la información de presupuesto y ejecución del gasto público peruano correspondiente al periodo *2023-2026*, utilizando archivos en formato Parquet y un modelo dimensional que facilite el análisis temporal, institucional, presupuestal y geográfico de los recursos públicos.
+
 ## Objetivos específicos
 
+1. *Integrar y estandarizar* los conjuntos de datos de presupuesto y ejecución del gasto correspondientes a los años 2023, 2024, 2025 y 2026 provenientes de las fuentes de datos abiertos del MEF.
+
+2. *Transformar y almacenar los datos en formato Parquet*, reduciendo las limitaciones asociadas al procesamiento de los archivos CSV originales y facilitando el acceso a las variables necesarias durante el procesamiento y análisis de la información.
+
+3. *Diseñar e implementar un modelo dimensional* que organice la información mediante una tabla de hechos de ejecución del gasto y dimensiones asociadas al periodo, entidad, clasificación presupuestal, fuente de financiamiento y ubicación geográfica.
+
+4. *Consolidar las principales métricas presupuestales* necesarias para el análisis, considerando el Presupuesto Institucional de Apertura (PIA), el Presupuesto Institucional Modificado (PIM), el monto devengado y el monto girado.
+
+5. *Incorporar información geográfica mediante códigos UBIGEO, latitud y longitud*, permitiendo analizar territorialmente la ejecución presupuestal y desarrollar visualizaciones geográficas mediante mapas.
+
+6. *Generar indicadores de ejecución presupuestal* que permitan comparar el presupuesto asignado y ejecutado, analizar su evolución entre 2023 y 2026 e identificar diferencias entre periodos, entidades y ámbitos territoriales.
+
+7. *Desarrollar consultas y visualizaciones analíticas* que permitan explorar tendencias y patrones de la ejecución del gasto público desde perspectivas temporales, institucionales, presupuestales y geográficas.
 
 # 6. Marco teórico
 
