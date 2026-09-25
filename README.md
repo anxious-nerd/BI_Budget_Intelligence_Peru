@@ -32,6 +32,8 @@ b) Presupuesto y Ejecución de Ingreso. Fuente: Ministerio de Economía y Finanz
 
 c) Tabla de Ubigeos del Perú al 2021. Fuente: Datos abiertos. https://www.datosabiertos.gob.pe/dataset/codigos-equivalentes-de-ubigeo-del-peru/resource/4a035ef3-8c50-4a4c-a11b-45a0777aedb3
 
+Conversión y almacenamiento de datos: Los archivos (formato CSV) fueron transformados al formato Parquet mediante la biblioteca DuckDB en Python, con el objetivo de optimizar su almacenamiento y procesamiento. Los archivos resultantes se encuentran disponibles en el siguiente enlace de Google Drive: (https://drive.google.com/drive/folders/16SBvEmBFvqbuuqwO0WiikVK3rTC7Y7Pv?usp=sharing).
+
 # 4. Problemática
 
 Los datos que publica el MEF vienen en archivos planos separados por dataset: uno para ingreso, otro para gasto, otro para ubigeo. Cada uno usa sus propios códigos y nombres de columna, sin una llave común para cruzarlos. Esto obliga a limpiar y unir las tablas a mano antes de poder responder algo tan simple como cuánto ejecutó una entidad frente a lo presupuestado.
