@@ -32,6 +32,13 @@ c) Tabla de Ubigeos del Perú al 2021. Fuente: Datos abiertos. https://www.datos
 
 # 4. Problemática
 
+Los datos de presupuesto y ejecución que publica el MEF vienen en archivos planos (CSV) separados por dataset: uno para ingreso, otro para gasto, otro para ubigeo. Cada uno usa sus propios códigos y nombres de columna, sin una llave común lista para cruzarlos. En la práctica, esto obliga a cualquiera que quiera analizarlos a limpiar y unir manualmente estas tablas antes de poder responder algo tan básico como cuánto ejecutó una entidad frente a lo que tenía presupuestado.
+
+Esta falta de integración impide ver el panorama completo. No hay forma directa de comparar, para una misma entidad o región, cuánto recaudó frente a cuánto gastó, ni de rastrear su evolución mes a mes o año a año. Tampoco existe una vista que cruce esa ejecución con el territorio (departamento, provincia, distrito) o con el tipo de gasto (planillas, obras, bienes y servicios), que es justamente la información que permitiría detectar patrones: qué regiones ejecutan mejor, en qué rubros se concentra el gasto, o si una entidad tiene un manejo más eficiente que otra similar.
+
+Esto afecta a dos tipos de usuario distintos. Por un lado, un funcionario público (de un pliego, una región o una municipalidad) que necesita comparar su ejecución con la de entidades similares para tomar decisiones o rendir cuentas. Por otro, cualquier ciudadano que quiera fiscalizar en qué se está gastando el presupuesto de su región o distrito, sin tener que saber SQL ni cruzar CSVs a mano. El **Navegador de Transparencia** del MEF, que es hoy la única vía pública para consultar esta información, no cubre a ninguno de los dos: permite ver cifras puntuales de una entidad a la vez, pero no comparar, visualizar tendencias ni cruzar dimensiones, que es justo lo que ambos perfiles de usuario necesitan.
+
+El resultado es que, pese a que la data es pública, sigue siendo prácticamente inaccesible para el análisis: no hay dashboards, no hay un modelo que la integre, y la única solución existente no está pensada para visualizar ni comparar, sino solo para consultar. Este proyecto busca resolver justamente eso: construir un modelo dimensional que integre ingreso, gasto y territorio en una sola estructura, lista para visualizar y comparar, tanto para un usuario técnico del gobierno como para un ciudadano sin conocimientos de análisis de datos.
 
 # 5. Objetivos
 
