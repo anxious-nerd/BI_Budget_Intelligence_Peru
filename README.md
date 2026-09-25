@@ -42,7 +42,7 @@ Consulta Amigable, la herramienta oficial del MEF, sí tiene un visualizador con
 
 Esto afecta tanto a funcionarios públicos, que necesitan comparar su ejecución con la de entidades similares, como a ciudadanos que quieren fiscalizar el gasto de su región sin cruzar reportes a mano. Ninguno de los dos puede hoy explorar el cruce ingreso gasto al nivel de detalle que necesita.
 
-Este proyecto busca cubrir ese vacío: un modelo dimensional que integre ingreso, gasto y territorio en una sola estructura, listo para visualizar y comparar ambos lados del presupuesto a la granularidad que el usuario elija.
+Este proyecto busca cubrir ese vacío, un modelo dimensional que integre ingreso, gasto y ubicación en una sola estructura, listo para visualizar y comparar ambos lados del presupuesto a la granularidad que el usuario elija.
 
 
 
