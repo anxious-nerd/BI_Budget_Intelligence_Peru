@@ -9,18 +9,20 @@ Large scale Budgeting Analysis Tool using open data from the Peruvian government
 * Ximena Ramírez
 
 # 1. Contexto
-La gestión de las finanzas públicas en el Perú se organiza a través del **Sistema Integrado de Administración Financiera (SIAF)**, administrado por el Ministerio de Economía y Finanzas (MEF), que registra la programación y ejecución del presupuesto público de más de 2,500 entidades entre pliegos, gobiernos regionales y gobiernos locales a nivel nacional. Este proceso sigue el ciclo presupuestal formal (PIA, PIM, devengado y girado en el gasto; recaudación en el ingreso) y se enmarca en el enfoque de **Presupuesto por Resultados (PpR)**, que busca vincular la asignación de recursos con el logro de resultados medibles para la ciudadanía.
 
-Como parte de su política de transparencia fiscal, el MEF publica esta información de forma abierta a través de plataformas como el **Navegador de Transparencia / Consulta Amigable** (`apps5.mineco.gob.pe/transparencia`), que permite consultar montos de ingreso y gasto por año, entidad, ubicación geográfica, fuente de financiamiento y clasificación funcional-programática. Sin embargo, esta data se publica en un formato pensado para el registro contable y la consulta puntual, y no para el análisis comparativo o la toma de decisiones a gran escala: no existe una vista consolidada que permita comparar, por ejemplo, cuánto recauda una región frente a cuánto ejecuta, o qué tan eficiente es una entidad respecto a otras con condiciones similares.
+El presupuesto público del Perú se administra a través del SIAF, el sistema del Ministerio de Economía y Finanzas (MEF) donde más de 2,500 entidades entre pliegos, gobiernos regionales y locales registran su programación y ejecución. El proceso sigue el ciclo formal del gasto (PIA, PIM, devengado, girado) y del ingreso (recaudación), bajo el enfoque de Presupuesto por Resultados.
 
-En este contexto, la descentralización fiscal peruana (vigente desde inicios de los 2000) ha ampliado el número de unidades ejecutoras responsables de gestionar presupuesto, lo que multiplica la heterogeneidad de la data y dificulta aún más su análisis agregado. Este proyecto propone construir un **datamart de inteligencia de negocios** sobre la data abierta del MEF (periodo 2026, ámbito de Proyectos de Inversión), con el fin de transformar los registros transaccionales del SIAF en un modelo dimensional que permita medir, comparar y explicar la ejecución presupuestal pública en el Perú.
+El MEF publica esta información como datos abiertos y a través de Consulta Amigable, pero en un formato pensado para el registro y la consulta puntual, no para el análisis comparativo. No hay una vista que permita ver, por ejemplo, cuánto recauda una región frente a lo que ejecuta.
+
+La descentralización fiscal, vigente desde inicios de los 2000, multiplicó el número de unidades ejecutoras y con ello la heterogeneidad de la data. Este proyecto construye un datamart de inteligencia de negocios sobre la data abierta del MEF (año 2026, ámbito Proyectos de Inversión) para medir, comparar y explicar la ejecución presupuestal pública.
 
 # 2. Descripción de la institución
-La institución sobre la cual se construye este proyecto es el **Ministerio de Economía y Finanzas del Perú (MEF)**, específicamente a través de la **Dirección General de Presupuesto Público (DGPP)**, ente rector del Sistema Nacional de Presupuesto Público. El MEF es responsable de diseñar la política presupuestal del país, definir los clasificadores oficiales de ingreso, gasto y clasificación funcional-programática, y administrar el SIAF como sistema transaccional en el que todas las entidades públicas, desde ministerios hasta municipalidades distritales, registran su programación y ejecución de presupuesto.
 
-Como mecanismo de transparencia fiscal, el MEF expone esta información al público a través del portal **Navegador de Transparencia** (`https://apps5.mineco.gob.pe/transparencia/Navegador/default.aspx`), la fuente de datos utilizada en este proyecto (año fiscal 2026, ámbito "Proyecto"). Esta plataforma permite consultar, entidad por entidad, los montos de Presupuesto Institucional de Apertura (PIA), Presupuesto Institucional Modificado (PIM), devengado, girado y recaudado, desagregados por ubicación geográfica, fuente de financiamiento y clasificación funcional-programática, es decir, exactamente las dimensiones sobre las que se construye el modelo multidimensional del datamart (`DIM_TIEMPO`, `DIM_ENTIDAD`, `DIM_UBIGEO`, `DIM_FINANCIAMIENTO`, `DIM_CLASIF_INGRESO`, `DIM_CLASIF_GASTO`, `DIM_FUNCIONAL`).
+El proyecto se construye sobre información del Ministerio de Economía y Finanzas del Perú (MEF), específicamente de la Dirección General de Presupuesto Público (DGPP), ente rector del presupuesto público. El MEF define los clasificadores oficiales de ingreso, gasto y clasificación funcional programática, y administra el SIAF, el sistema donde todas las entidades públicas registran su presupuesto.
 
-Al ser el MEF el ente rector y no una empresa privada, el "cliente" de esta solución de BI se entiende en un sentido amplio: gestores públicos (a nivel de pliego, gobierno regional o municipalidad), órganos de control y ciudadanía interesada en fiscalizar el uso de recursos públicos, quienes hoy no cuentan con una herramienta analítica que traduzca la data abierta del MEF en indicadores de gestión accionables.
+Como mecanismo de transparencia, el MEF publica esta data a través de Consulta Amigable (`apps5.mineco.gob.pe/transparencia/Navegador`), la fuente usada en este proyecto para el año fiscal 2026, ámbito Proyecto. Ahí se puede consultar, por entidad, el PIA, el PIM, el devengado, el girado y el recaudado, desagregados por ubicación geográfica, fuente de financiamiento y clasificación funcional programática: exactamente las dimensiones sobre las que se construye este datamart.
+
+El MEF no es una empresa privada, así que el "cliente" de esta solución se entiende en sentido amplio: funcionarios públicos, órganos de control y ciudadanos que hoy no cuentan con una herramienta que traduzca esta data en indicadores accionables.
 
 # 3. Fuentes de datos
 
@@ -32,13 +34,13 @@ c) Tabla de Ubigeos del Perú al 2021. Fuente: Datos abiertos. https://www.datos
 
 # 4. Problemática
 
-Los datos de presupuesto y ejecución que publica el MEF vienen en archivos planos (CSV) separados por dataset: uno para ingreso, otro para gasto, otro para ubigeo. Cada uno usa sus propios códigos y nombres de columna, sin una llave común lista para cruzarlos. En la práctica, esto obliga a cualquiera que quiera analizarlos a limpiar y unir manualmente estas tablas antes de poder responder algo tan básico como cuánto ejecutó una entidad frente a lo que tenía presupuestado.
+Los datos que publica el MEF vienen en archivos planos separados por dataset: uno para ingreso, otro para gasto, otro para ubigeo. Cada uno usa sus propios códigos y nombres de columna, sin una llave común para cruzarlos. Esto obliga a limpiar y unir las tablas a mano antes de poder responder algo tan simple como cuánto ejecutó una entidad frente a lo presupuestado.
 
-Esta falta de integración limita el análisis. **Consulta Amigable**, la herramienta oficial del MEF para consultar esta información, sí ofrece un visualizador con dashboards, pero separa el gasto y el ingreso en módulos de consulta distintos: se puede ver cuánto ejecutó una entidad o cuánto recaudó, pero no ambos cruzados en una misma vista, al nivel de detalle que el usuario elija (por entidad, región, fuente de financiamiento o periodo). Para responder algo tan simple como si una región está gastando más de lo que recauda, o cómo evoluciona esa brecha en el tiempo, no hay una vista lista: hay que consultar cada módulo por separado y cruzar los resultados a mano.
+Consulta Amigable, la herramienta oficial del MEF, sí tiene un visualizador con dashboards, pero separa el gasto y el ingreso en módulos distintos. Se puede ver cuánto ejecutó una entidad o cuánto recaudó, pero no ambos cruzados en una misma vista, al nivel que uno elija (entidad, región, fuente de financiamiento, periodo). Para saber si una región gasta más de lo que recauda, o cómo cambia esa brecha en el tiempo, hay que consultar cada módulo por separado y cruzar los resultados manualmente.
 
-Esto afecta a dos tipos de usuario distintos. Por un lado, un funcionario público (de un pliego, una región o una municipalidad) que necesita comparar su ejecución con la de entidades similares para tomar decisiones o rendir cuentas. Por otro, cualquier ciudadano que quiera fiscalizar en qué se está gastando el presupuesto de su región o distrito, sin tener que cruzar reportes a mano. Ninguno de los dos puede hoy explorar libremente el cruce ingreso-gasto al nivel de detalle que necesita.
+Esto afecta tanto a funcionarios públicos, que necesitan comparar su ejecución con la de entidades similares, como a ciudadanos que quieren fiscalizar el gasto de su región sin cruzar reportes a mano. Ninguno de los dos puede hoy explorar el cruce ingreso gasto al nivel de detalle que necesita.
 
-Este proyecto busca resolver justamente eso: construir un modelo dimensional que integre ingreso, gasto y territorio en una sola estructura, que permita visualizar y comparar ambos lados del presupuesto —a la granularidad que el usuario elija— tanto para un funcionario público como para un ciudadano sin conocimientos técnicos.
+Este proyecto busca cubrir ese vacío: un modelo dimensional que integre ingreso, gasto y territorio en una sola estructura, listo para visualizar y comparar ambos lados del presupuesto a la granularidad que el usuario elija.
 
 # 5. Objetivos
 
@@ -54,67 +56,65 @@ Este proyecto busca resolver justamente eso: construir un modelo dimensional que
 
 ### 6.1.1 Business Intelligence
 
-Se define como el conjunto de sistemas que combinan la recolección, el almacenamiento y la gestión del conocimiento con herramientas analíticas, con el fin de presentar información compleja a los tomadores de decisiones (Negash, 2004).
-En este proyecto, BI se aplica sobre la información presupuestal publicada por el Ministerio de Economía y Finanzas (MEF) para fines comparativos. 
+Conjunto de sistemas que combinan recolección, almacenamiento y gestión del conocimiento con herramientas analíticas, para presentar información compleja a quienes toman decisiones (Negash, 2004). En este proyecto, BI se aplica sobre la información presupuestal del MEF con fines comparativos.
 
 ### 6.1.2 Data warehouse
 
-Es una colección de datos orientada a temas, integrada, no volátil y variante en el tiempo, que sirve de soporte a la toma de decisiones (Inmon, 2005). A diferencia de los sistemas transaccionales (OLTP), optimizados para registrar operaciones individuales, el *data warehouse* está diseñado para consultas analíticas que agregan grandes volúmenes de datos históricos (Chaudhuri & Dayal, 1997).
+Colección de datos orientada a temas, integrada, no volátil y variante en el tiempo, que sirve de soporte a la toma de decisiones (Inmon, 2005). A diferencia de los sistemas transaccionales (OLTP), optimizados para registrar operaciones individuales, el data warehouse está diseñado para consultas analíticas sobre grandes volúmenes de datos históricos (Chaudhuri & Dayal, 1997).
 
 ### 6.1.3 Modelamiento dimensional
 
-Organiza los datos en dos tipos de tablas: las **tablas de hechos**, que almacenan las mediciones numéricas de un proceso de negocio, y las **tablas de dimensiones**, que contienen el contexto descriptivo de esas mediciones: quién, qué, dónde, cuándo y cómo (Kimball & Ross, 2013).
+Organiza los datos en tablas de hechos, que guardan las mediciones numéricas de un proceso de negocio, y tablas de dimensiones, que dan el contexto de esas mediciones: quién, qué, dónde, cuándo y cómo (Kimball & Ross, 2013).
 
 ## 6.2 Presupuesto público del Perú
 
 ### 6.2.1 Sistema Nacional de Presupuesto Público
- 
-Es el conjunto de normas, procesos e instituciones que organiza cómo el Estado peruano asigna, ejecuta y evalúa el uso de sus recursos. Está regulado por el Decreto Legislativo N.° 1440, y su ente rector es la Dirección General de Presupuesto Público del MEF, encargada de fijar las reglas y los clasificadores que todas las entidades deben aplicar (Decreto Legislativo N.° 1440, 2018).
+
+Conjunto de normas, procesos e instituciones que organiza cómo el Estado peruano asigna, ejecuta y evalúa sus recursos. Está regulado por el Decreto Legislativo N.° 1440, y su ente rector es la DGPP del MEF, encargada de fijar las reglas y clasificadores que todas las entidades deben aplicar (Decreto Legislativo N.° 1440, 2018).
 
 ### 6.2.2 Sistema Integrado de Administración Financiera (SIAF)
- 
-Es el sistema informático del MEF en el que todas las entidades públicas registran la programación y la ejecución de su presupuesto. Funciona como el sistema transaccional de las finanzas públicas, y los datos abiertos que publica el MEF provienen de él.
+
+Sistema informático del MEF donde las entidades públicas registran la programación y ejecución de su presupuesto. Es el sistema transaccional de las finanzas públicas, y de ahí provienen los datos abiertos que publica el MEF.
 
 ### 6.2.3 Pliego y unidad ejecutora
- 
-El pliego es la entidad pública a la que se le aprueba un presupuesto, como un ministerio, un gobierno regional o una municipalidad. La unidad ejecutora es la dependencia dentro del pliego que administra directamente los recursos, y es el nivel más detallado en el que se registra la ejecución (Decreto Legislativo N.° 1440, 2018).
- 
-### 6.2.4 Presupuesto Institucional de Apertura (PIA)
- 
-Es el presupuesto aprobado para una entidad al inicio del año fiscal, tanto en ingresos como en gastos (Decreto Legislativo N.° 1440, 2018).
- 
-### 6.2.5 Presupuesto Institucional Modificado (PIM)
- 
-Es el presupuesto actualizado de una entidad, que resulta de sumar al PIA las modificaciones aprobadas durante el año, como transferencias o créditos adicionales (Decreto Legislativo N.° 1440, 2018). Representa los recursos con los que la entidad realmente cuenta, por lo que es la referencia habitual para evaluar su gestión.
- 
-### 6.2.6 Devengado
- 
-Es la fase de ejecución del gasto en la que se reconoce la obligación de pagar, una vez que la entidad ha recibido conforme el bien o servicio adquirido. Es precedida por la certificación (reserva del presupuesto) y el compromiso (acuerdo del gasto con el proveedor) (Decreto Legislativo N.° 1440, 2018). Se considera la medida estándar de ejecución presupuestal, porque indica que el gasto ya se concretó.
- 
-### 6.2.7 Girado
- 
-Es la fase final de ejecución del gasto, en la que se emite el pago y se cancela la obligación reconocida en el devengado.
- 
-### 6.2.8 Avance de ejecución
- 
-Es el indicador que mide qué proporción de su presupuesto ha gastado una entidad. Se calcula como el cociente entre el monto devengado y el PIM.
- 
-### 6.2.9 Recaudado
- 
-Es el monto de ingresos que una entidad efectivamente percibe en un periodo, ya sea por impuestos, tasas, transferencias u otras fuentes.
- 
-### 6.2.10 Fuente de financiamiento y rubro
- 
-Son las categorías que identifican el origen de los recursos públicos. La fuente agrupa los recursos según su procedencia general (por ejemplo, recursos ordinarios o recursos determinados), y el rubro la desagrega (por ejemplo, canon y sobrecanon, regalías, renta de aduanas y participaciones) (Decreto Legislativo N.° 1440, 2018).
- 
-### 6.2.11 Clasificadores económicos de ingresos y gastos
- 
-Son catálogos jerárquicos definidos por el MEF que agrupan los ingresos según su naturaleza (por ejemplo, impuestos o transferencias) y los gastos según el tipo de bien o servicio adquirido (por ejemplo, planillas, bienes y servicios u obras).
- 
-### 6.2.12 Clasificación funcional y estructura programática
- 
-La clasificación funcional agrupa el gasto según las grandes áreas de acción del Estado, como educación, salud o transporte. La estructura programática lo vincula con los programas presupuestales, productos y proyectos a los que se destina. Ambas convergen en la **meta presupuestal**, que es la unidad mínima de programación del gasto dentro de una entidad.
 
+El pliego es la entidad a la que se le aprueba un presupuesto: un ministerio, un gobierno regional, una municipalidad. La unidad ejecutora es la dependencia dentro del pliego que administra los recursos, y es el nivel más detallado en el que se registra la ejecución (Decreto Legislativo N.° 1440, 2018).
+
+### 6.2.4 Presupuesto Institucional de Apertura (PIA)
+
+Presupuesto aprobado para una entidad al inicio del año fiscal, tanto en ingresos como en gastos (Decreto Legislativo N.° 1440, 2018).
+
+### 6.2.5 Presupuesto Institucional Modificado (PIM)
+
+Presupuesto actualizado de una entidad, resultado de sumar al PIA las modificaciones aprobadas durante el año, como transferencias o créditos adicionales (Decreto Legislativo N.° 1440, 2018). Representa los recursos con los que la entidad realmente cuenta, por lo que es la referencia habitual para evaluar su gestión.
+
+### 6.2.6 Devengado
+
+Fase del gasto en la que se reconoce la obligación de pagar, una vez recibido conforme el bien o servicio. La precede la certificación (reserva del presupuesto) y el compromiso (acuerdo con el proveedor) (Decreto Legislativo N.° 1440, 2018). Se considera la medida estándar de ejecución, porque indica que el gasto ya se concretó.
+
+### 6.2.7 Girado
+
+Fase final del gasto, en la que se emite el pago y se cancela la obligación reconocida en el devengado.
+
+### 6.2.8 Avance de ejecución
+
+Indicador que mide qué proporción de su presupuesto ha gastado una entidad. Se calcula dividiendo el monto devengado entre el PIM.
+
+### 6.2.9 Recaudado
+
+Monto de ingresos que una entidad efectivamente percibe en un periodo, ya sea por impuestos, tasas, transferencias u otras fuentes.
+
+### 6.2.10 Fuente de financiamiento y rubro
+
+Categorías que identifican el origen de los recursos públicos. La fuente agrupa los recursos según su procedencia general (recursos ordinarios, recursos determinados), y el rubro la desagrega (canon y sobrecanon, regalías, renta de aduanas) (Decreto Legislativo N.° 1440, 2018).
+
+### 6.2.11 Clasificadores económicos de ingresos y gastos
+
+Catálogos jerárquicos del MEF que agrupan los ingresos según su naturaleza (impuestos, transferencias) y los gastos según el tipo de bien o servicio adquirido (planillas, bienes y servicios, obras).
+
+### 6.2.12 Clasificación funcional y estructura programática
+
+La clasificación funcional agrupa el gasto según las grandes áreas de acción del Estado: educación, salud, transporte. La estructura programática lo vincula con los programas presupuestales, productos y proyectos a los que se destina. Ambas convergen en la meta presupuestal, la unidad mínima de programación del gasto dentro de una entidad.
 
 
 # 7. Modelamiento multidimensional
@@ -260,7 +260,7 @@ La tabla de hechos de gasto almacena los montos presupuestados y ejecutados por 
 
 ## Referencias
 
-Chaudhuri, S., & Dayal, U. (1997). An overview of data warehousing and OLAP technology. *ACM SIGMOD Record, 26*(1), 65–74. https://doi.org/10.1145/248603.248616
+Chaudhuri, S., & Dayal, U. (1997). An overview of data warehousing and OLAP technology. *ACM SIGMOD Record, 26*(1), 65-74. https://doi.org/10.1145/248603.248616
 
 Decreto Legislativo N.° 1440. (2018, 16 de septiembre). Decreto Legislativo del Sistema Nacional de Presupuesto Público. *Diario Oficial El Peruano*.
 
@@ -268,4 +268,4 @@ Inmon, W. H. (2005). *Building the data warehouse* (4.ª ed.). Wiley.
 
 Kimball, R., & Ross, M. (2013). *The data warehouse toolkit: The definitive guide to dimensional modeling* (3.ª ed.). Wiley.
 
-Negash, S. (2004). Business intelligence. *Communications of the Association for Information Systems, 13*, 177–195. https://doi.org/10.17705/1CAIS.01315
+Negash, S. (2004). Business intelligence. *Communications of the Association for Information Systems, 13*, 177-195. https://doi.org/10.17705/1CAIS.01315
