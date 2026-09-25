@@ -185,11 +185,11 @@ La dimensión clasificador de ingreso almacena la clasificación económica de l
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
-| sk_clasif_ingreso | INT | Identificador único de la dimensión clasificador de ingreso (clave subrogada). Se genera a partir de la combinación de los códigos de genérica, subgenérica, subgenérica detalle, específica y específica detalle. |
+| sk_clasif_ingreso | INT | Identificador único de la dimensión clasificador de ingreso (clave subrogada). |
 | generica | VARCHAR(100) | Genérica de ingreso, el mayor nivel de agregación de los clasificadores de ingreso (por ejemplo, Impuestos y contribuciones obligatorias, Saldos de balance). Origen: `GENERICA_NOMBRE`. |
-| subgenerica | VARCHAR(100) | Subgenérica de gasto, nivel intermedio de desagregación que permite detallar la categoría de la genérica. Origen: `SUBGENERICA_NOMBRE`. |
-| subgenerica_det | VARCHAR(150) | Subgenérica detalle de gasto, nivel que desagrega la subgenérica y permite identificar con mayor precisión la naturaleza del gasto. Origen: `SUBGENERICA_DET_NOMBRE`. |
-| especifica | VARCHAR(150) | Específica de gasto, nivel de clasificación que detalla la naturaleza del gasto dentro de la subgenérica detalle. Origen: `ESPECIFICA_NOMBRE`. |
+| subgenerica | VARCHAR(100) | Subgenérica de ingreso, nivel intermedio de desagregación que permite detallar la categoría de la genérica. Origen: `SUBGENERICA_NOMBRE`. |
+| subgenerica_det | VARCHAR(150) | Subgenérica detalle de ingreso, nivel que desagrega la subgenérica y permite identificar con mayor precisión la naturaleza del ingreso. Origen: `SUBGENERICA_DET_NOMBRE`. |
+| especifica | VARCHAR(150) | Específica de ingreso, nivel de clasificación que detalla la naturaleza del ingreso dentro de la subgenérica detalle. Origen: `ESPECIFICA_NOMBRE`. |
 | especifica_det | VARCHAR(200) | Específica detalle, el nivel de agregación más específico y detallado que identifica y clasifica los recursos. Origen: `ESPECIFICA_DET_NOMBRE`. |
  
 ---
@@ -200,8 +200,11 @@ La dimensión clasificador de gasto almacena la clasificación económica del ga
  
 | Nombre de columna | Tipo de dato | Descripción |
 |---|---|---|
-| sk_clasif_gasto | INT | Identificador único de la dimensión clasificador de gasto (clave subrogada). Se genera a partir de la combinación de los códigos de genérica, subgenérica, subgenérica detalle, específica y específica detalle. |
+| sk_clasif_gasto | INT | Identificador único de la dimensión clasificador de gasto (clave subrogada). |
 | generica | VARCHAR(100) | Genérica de gasto, el mayor nivel de agregación de los clasificadores de gasto (por ejemplo, Personal y obligaciones sociales, Bienes y servicios, Adquisición de activos no financieros). Origen: `GENERICA_NOMBRE`. |
+| subgenerica | VARCHAR(100) | Subgenérica de gasto, nivel intermedio de desagregación que permite detallar la categoría de la genérica. Origen: `SUBGENERICA_NOMBRE`. |
+| subgenerica_det | VARCHAR(150) | Subgenérica detalle de gasto, nivel que desagrega la subgenérica y permite identificar con mayor precisión la naturaleza del gasto. Origen: `SUBGENERICA_DET_NOMBRE`. |
+| especifica | VARCHAR(150) | Específica de gasto, nivel de clasificación que detalla la naturaleza del gasto dentro de la subgenérica detalle. Origen: `ESPECIFICA_NOMBRE`. |
 | especifica_det | VARCHAR(200) | Específica de nivel 2, que identifica el detalle del gasto. Es el nivel más desagregado del clasificador. Origen: `ESPECIFICA_DET_NOMBRE`. |
  
 ---
