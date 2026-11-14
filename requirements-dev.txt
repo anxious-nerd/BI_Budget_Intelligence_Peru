@@ -1,0 +1,3 @@
+-r requirements.txt
+pytest==9.2.0
+requests          # solo para scripts/load_test.py
