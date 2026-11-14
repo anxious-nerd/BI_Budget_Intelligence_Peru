@@ -1,0 +1,6 @@
+# Versiones con las que se probó el proyecto (Python 3.12). Si usas otras, corre `pytest` para validar.
+duckdb==2.0.0
+dash==4.4.1
+plotly==7.1.0
+pandas==3.1.0
+python-dotenv==1.2.4

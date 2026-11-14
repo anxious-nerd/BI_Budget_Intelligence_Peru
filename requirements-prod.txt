@@ -1,0 +1,2 @@
+-r requirements.txt
+gunicorn          # Linux/macOS.  En Windows usa:  pip install waitress  (no probado)

@@ -1,0 +1,235 @@
+"""Gráficos (Plotly) y formato de cifras. Sin acceso a datos: reciben DataFrames."""
+from __future__ import annotations
+
+import pandas as pd
+import plotly.graph_objects as go
+
+from dashboard.data import MESES
+
+INK, MUTED, RULE = "#16212B", "#667380", "#D3D9DE"
+GASTO, GASTO_L = "#1F5F74", "#A9C6D0"
+INGRESO, INGRESO_L = "#B5761B", "#E6CC9B"
+ALERT = "#A63A2B"
+FONT = '"Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
+
+
+# ------------------------------------------------------------------ formato
+def soles(x: float | None) -> str:
+    """Cifra compacta en soles: 'S/ 12.34 mil M', 'S/ 5.6 M', 'S/ 800 mil'."""
+    if x is None or pd.isna(x):
+        return "—"
+    a = abs(x)
+    if a >= 1e9:
+        return f"S/ {x / 1e9:,.2f} mil M"
+    if a >= 1e6:
+        return f"S/ {x / 1e6:,.1f} M"
+    if a >= 1e3:
+        return f"S/ {x / 1e3:,.0f} mil"
+    return f"S/ {x:,.0f}"
+
+
+def soles_parts(x: float | None) -> tuple[str, str]:
+    """(número, unidad) para mostrar el número grande y la unidad pequeña."""
+    if x is None or pd.isna(x):
+        return "—", ""
+    a = abs(x)
+    if a >= 1e9:
+        return f"{x / 1e9:,.2f}", "mil millones de soles"
+    if a >= 1e6:
+        return f"{x / 1e6:,.1f}", "millones de soles"
+    if a >= 1e3:
+        return f"{x / 1e3:,.0f}", "miles de soles"
+    return f"{x:,.0f}", "soles"
+
+
+def pct(num: float, den: float) -> float | None:
+    return num / den if den else None
+
+
+def pct_txt(p: float | None, digits: int = 1) -> str:
+    return "—" if p is None else f"{p * 100:,.{digits}f}%"
+
+
+def short(text: str, n: int = 34) -> str:
+    text = str(text).strip().title() if str(text).isupper() else str(text).strip()
+    return text if len(text) <= n else text[: n - 1].rstrip() + "…"
+
+
+# ------------------------------------------------------------------ base
+def _layout(height: int = 300, **kw) -> dict:
+    base = dict(
+        height=height,
+        margin=dict(l=4, r=12, t=6, b=4),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=FONT, size=12, color=INK),
+        hoverlabel=dict(font=dict(family=FONT, size=12), bgcolor="white", bordercolor=RULE),
+        separators=".,",  # decimales con punto, miles con coma
+        showlegend=False,
+    )
+    base.update(kw)
+    return base
+
+
+def empty_fig(msg: str = "Sin datos para este filtro", height: int = 300) -> go.Figure:
+    fig = go.Figure()
+    fig.update_layout(
+        **_layout(height),
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        annotations=[dict(text=msg, showarrow=False, font=dict(size=14, color=MUTED))],
+    )
+    return fig
+
+
+# ------------------------------------------------------------------ gráficos
+def fig_cadena(k: dict) -> go.Figure:
+    """Del presupuesto al pago: PIA -> PIM -> devengado -> girado (las 4 medidas del modelo)."""
+    pim = k.get("pim", 0)
+    if not pim:
+        return empty_fig(height=250)
+    steps = [
+        ("Apertura (PIA)", k["pia"], "#B9C3CC"),
+        ("Vigente (PIM)", pim, "#8794A1"),
+        ("Devengado", k["devengado"], GASTO),
+        ("Girado", k["girado"], "#143F4E"),
+    ]
+    fig = go.Figure(
+        go.Bar(
+            y=[s[0] for s in steps],
+            x=[s[1] for s in steps],
+            orientation="h",
+            marker_color=[s[2] for s in steps],
+            text=[f"{soles(s[1])}  ·  {pct_txt(pct(s[1], pim), 0)} del PIM" for s in steps],
+            textposition="outside",
+            cliponaxis=False,
+            hovertemplate="%{y}: %{text}<extra></extra>",
+        )
+    )
+    fig.update_layout(
+        **_layout(250, margin=dict(l=4, r=200, t=10, b=4)),
+        xaxis=dict(visible=False, range=[0, max(pim, k["pia"], 1) * 1.02]),
+        yaxis=dict(autorange="reversed", tickfont=dict(size=13)),
+        bargap=0.3,
+    )
+    return fig
+
+
+def fig_mensual(df: pd.DataFrame, col: str, pim: float, color: str, light: str, nombre: str) -> go.Figure:
+    """Barras = flujo del mes; línea = avance acumulado como % del PIM vigente."""
+    if df.empty or not df[col].any():
+        return empty_fig()
+    cum = df[col].cumsum()
+    x = [MESES[m - 1] for m in df["mes"]]
+    fig = go.Figure()
+    fig.add_bar(x=x, y=df[col] / 1e6, name=f"{nombre} del mes", marker_color=light,
+                hovertemplate="%{x}: S/ %{y:,.1f} M<extra></extra>")  # fmt: skip
+    if pim:
+        fig.add_scatter(x=x, y=cum / pim * 100, name="Avance acumulado", yaxis="y2", mode="lines+markers",
+                        line=dict(color=color, width=2.5), marker=dict(size=6),
+                        hovertemplate="Acumulado: %{y:.1f}% del PIM<extra></extra>")  # fmt: skip
+    fig.update_layout(
+        **_layout(300, showlegend=True, legend=dict(orientation="h", y=1.12, x=0, font=dict(size=12))),
+        yaxis=dict(title=dict(text="S/ millones", font=dict(size=11, color=MUTED)), gridcolor=RULE, zeroline=False),
+        yaxis2=dict(overlaying="y", side="right", ticksuffix="%", showgrid=False, rangemode="tozero",
+                    tickmode="auto", nticks=6,  # Plotly 7 sincroniza ticks de ejes superpuestos por defecto
+                    title=dict(text="% del PIM", font=dict(size=11, color=MUTED))),
+        xaxis=dict(showgrid=False), bargap=0.25,
+    )  # fmt: skip
+    return fig
+
+
+def fig_ranking(df: pd.DataFrame, label: str, value: str, pim: str | None, color: str, light: str, height: int = 340) -> go.Figure:
+    """Barras horizontales (mayor arriba) con valor y, si hay PIM, % de avance."""
+    if df.empty or not df[value].any():
+        return empty_fig(height=height)
+    d = df.sort_values(value, ascending=True)
+    texts = [
+        f"{soles(v)}" + (f"  ·  {pct_txt(pct(v, p), 0)}" if pim and p else "")
+        for v, p in zip(d[value], d[pim] if pim else [None] * len(d))
+    ]
+    fig = go.Figure(go.Bar(y=d[label], x=d[value], orientation="h", marker_color=color, text=texts,
+                           textposition="outside", cliponaxis=False,
+                           hovertemplate="%{y}<br>%{text}<extra></extra>"))  # fmt: skip
+    fig.update_layout(**_layout(height, margin=dict(l=4, r=130, t=6, b=4)), xaxis=dict(visible=False),
+                      yaxis=dict(tickfont=dict(size=12)), bargap=0.3)  # fmt: skip
+    return fig
+
+
+def fig_avance_depto(df: pd.DataFrame, label: str, selected: tuple[str, ...] = (), codes: str = "departamento") -> go.Figure:
+    """% de avance (devengado/PIM) por departamento, ordenado."""
+    if df.empty:
+        return empty_fig(height=520)
+    d = df[df["pim"] > 0].copy()
+    if d.empty:
+        return empty_fig(height=520)
+    d["avance"] = d["devengado"] / d["pim"]
+    d = d.sort_values("avance", ascending=True)
+    sel = set(selected)
+    colors = [GASTO if (not sel or c in sel) else GASTO_L for c in d[codes]]
+    fig = go.Figure(go.Bar(
+        y=d[label], x=d["avance"] * 100, orientation="h", marker_color=colors,
+        text=[f"{a * 100:.1f}%" for a in d["avance"]], textposition="outside", cliponaxis=False,
+        customdata=list(zip(d["devengado"].map(soles), d["pim"].map(soles))),
+        hovertemplate="%{y}<br>Avance: %{x:.1f}%<br>Devengado: %{customdata[0]}<br>PIM: %{customdata[1]}<extra></extra>",
+    ))  # fmt: skip
+    fig.update_layout(**_layout(520, margin=dict(l=4, r=48, t=6, b=4)), xaxis=dict(visible=False, rangemode="tozero"),
+                      yaxis=dict(tickfont=dict(size=12)), bargap=0.25)  # fmt: skip
+    return fig
+
+
+def fig_pim_vs_ejec(df: pd.DataFrame, label: str, ejec: str, ejec_name: str, color: str, light: str, height: int = 330) -> go.Figure:
+    """PIM vs. ejecución (devengado/recaudado) por categoría, barras agrupadas."""
+    if df.empty or not (df["pim"].any() or df[ejec].any()):
+        return empty_fig(height=height)
+    d = df.sort_values("pim", ascending=True)
+    fig = go.Figure()
+    fig.add_bar(y=d[label], x=d["pim"], orientation="h", name="PIM", marker_color=light,
+                hovertemplate="%{y}<br>PIM: S/ %{x:,.0f}<extra></extra>")  # fmt: skip
+    fig.add_bar(y=d[label], x=d[ejec], orientation="h", name=ejec_name, marker_color=color,
+                hovertemplate="%{y}<br>" + ejec_name + ": S/ %{x:,.0f}<extra></extra>")  # fmt: skip
+    fig.update_layout(**_layout(height, showlegend=True, legend=dict(orientation="h", y=1.08, x=0)),
+                      barmode="group", xaxis=dict(showgrid=True, gridcolor=RULE, tickformat=".2s", zeroline=False),
+                      yaxis=dict(tickfont=dict(size=12)), bargap=0.25)  # fmt: skip
+    return fig
+
+
+def fig_mapa(df: pd.DataFrame, metrica: str, height: int = 640) -> go.Figure:
+    """Mapa de burbujas: un punto por distrito donde se ubica la entidad (longitud x, latitud y).
+
+    No necesita mapa base ni conexión a internet: ~1,900 distritos dibujan la silueta del país.
+    Tamaño = monto absoluto; color = valor de la métrica elegida.
+    """
+    if df.empty:
+        return empty_fig("Sin ubicaciones con coordenadas para este filtro", height)
+    tam = df["tamano"].abs()
+    if not tam.any():
+        return empty_fig("Sin montos para este filtro", height)
+    if metrica == "avance":
+        hi = float(df["valor"].quantile(0.98)) or 1.0
+        color, cs, cmin, cmax, cmid, bar = df["valor"], [[0, "#E8EEF0"], [1, GASTO]], 0, max(hi, 0.01), None, "Avance"
+        fmt = lambda v: f"{v * 100:.1f}%"  # noqa: E731
+    elif metrica == "brecha":
+        lim = float(df["valor"].abs().quantile(0.98)) or 1.0
+        color, cs, cmin, cmax, cmid, bar = df["valor"], [[0, GASTO], [0.5, "#F2F4F5"], [1, INGRESO]], -lim, lim, 0, "Recaudado − devengado"
+        fmt = soles
+    else:
+        base = INGRESO if metrica == "recaudado" else GASTO
+        lim = float(df["valor"].quantile(0.98)) or 1.0
+        color, cs, cmin, cmax, cmid, bar = df["valor"], [[0, "#F0F2F3"], [1, base]], 0, lim, None, "S/"
+        fmt = soles
+    sizeref = 2.0 * float(tam.max()) / (34.0**2)
+    fig = go.Figure(go.Scatter(
+        x=df["longitud"], y=df["latitud"], mode="markers",
+        marker=dict(size=tam, sizemode="area", sizeref=sizeref, sizemin=3, color=color, colorscale=cs, cmin=cmin, cmax=cmax,
+                    cmid=cmid, opacity=0.8, line=dict(width=0.5, color="rgba(22,33,43,0.45)"),
+                    colorbar=dict(title=dict(text=bar, font=dict(size=11)), thickness=10, len=0.55, tickfont=dict(size=11))),
+        customdata=list(zip(df["distrito"], df["provincia"], df["departamento"], [fmt(v) for v in df["valor"]])),
+        hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]}, %{customdata[2]}<br>" + bar + ": %{customdata[3]}<extra></extra>",
+    ))  # fmt: skip
+    fig.update_layout(
+        **_layout(height, margin=dict(l=0, r=0, t=6, b=0)),
+        xaxis=dict(visible=False, scaleanchor="y", scaleratio=1),
+        yaxis=dict(visible=False),
+    )
+    return fig
