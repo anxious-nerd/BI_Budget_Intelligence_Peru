@@ -67,5 +67,20 @@ services:
       - ./data:/app/data
       - ./warehouse:/app/warehouse
 
+  # Cliente SQL web (DBeaver en el navegador). Opcional:
+  #   docker compose --profile tools up -d cloudbeaver
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    profiles: ["tools"]
+    depends_on:
+      mssql:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8978:8978"       # solo local; en la VM se entra por túnel SSH
+    volumes:
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
+    restart: unless-stopped
+
 volumes:
   mssql_data:
+  cloudbeaver_data:
