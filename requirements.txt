@@ -4,3 +4,5 @@ dash==4.4.1
 plotly==7.1.0
 pandas==3.1.0
 python-dotenv==1.2.4
+pymssql==2.4.6        # cargador a SQL Server (etl/load_mssql.py)
+gdown==6.5.1          # descarga de los parquet desde Drive (scripts/download_data.py)

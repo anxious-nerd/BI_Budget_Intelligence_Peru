@@ -1,0 +1,71 @@
+# Datamart MEF en SQL Server.
+#
+#   docker compose up -d                       # levanta SQL Server y crea base, modelo y usuarios
+#   docker compose run --rm etl <comando>      # ETL y carga (ver docs/mssql.md)
+#
+# Las contraseñas y usuarios salen de .env (copia .env.example). Imagen solo x86_64 (no corre en ARM).
+name: mef
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PID:-Developer}          # Developer = gratis para desarrollo/pruebas (no producción)
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Define MSSQL_SA_PASSWORD en .env}
+      MSSQL_MEMORY_LIMIT_MB: ${MSSQL_MEMORY_LIMIT_MB:-4096}
+      TZ: America/Lima
+    ports:
+      # Por defecto solo se escucha en la propia máquina. En la VM: MSSQL_BIND=0.0.0.0 (ver docs/mssql.md).
+      - "${MSSQL_BIND:-127.0.0.1}:${MSSQL_PORT:-1433}:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+
+  # Corre una vez en cada `up`: crea/actualiza base, tablas y usuarios (idempotente) y termina.
+  mssql-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      mssql:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "/docker/mssql-init.sh"]
+    environment:
+      MSSQL_HOST: mssql
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_DB: ${MSSQL_DB:-MEF_DW}
+      MSSQL_ADMIN_USER: ${MSSQL_ADMIN_USER:-mef_admin}
+      MSSQL_ADMIN_PASSWORD: ${MSSQL_ADMIN_PASSWORD:?Define MSSQL_ADMIN_PASSWORD en .env}
+      MSSQL_READER_USER: ${MSSQL_READER_USER:-mef_lector}
+      MSSQL_READER_PASSWORD: ${MSSQL_READER_PASSWORD:?Define MSSQL_READER_PASSWORD en .env}
+    volumes:
+      - ./sql:/sql:ro
+      - ./docker:/docker:ro
+    restart: "no"
+
+  # Herramienta, no servicio: solo corre con `docker compose run --rm etl ...`.
+  # Usa el usuario ADMIN; nunca `sa`.
+  etl:
+    build: .
+    profiles: ["etl"]
+    depends_on:
+      mssql-init:
+        condition: service_completed_successfully
+    env_file: .env
+    environment:
+      MSSQL_HOST: mssql
+      MSSQL_PORT: "1433"
+      HOME: /tmp
+      TZ: America/Lima
+    user: "${MEF_UID:-1000}:${MEF_GID:-1000}"   # los archivos que escribe quedan a tu nombre
+    volumes:
+      - ./data:/app/data
+      - ./warehouse:/app/warehouse
+
+volumes:
+  mssql_data:

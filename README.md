@@ -233,6 +233,20 @@ gunicorn dashboard.app:server -w 2 --threads 4 -b 0.0.0.0:8050   # producción (
 - Cada gunicorn worker carga sus propios cubos (~400 MB en mis pruebas con 12 M de filas de gasto): dimensiona `-w` según tu RAM.
 - Prueba de carga: `python -m scripts.load_test --url http://127.0.0.1:8050`.
 
+## Paso 7 · Datamart en SQL Server (Docker / VM de Azure)
+
+El mismo modelo se publica en **SQL Server** para que el equipo lo consulte de forma remota con un usuario de solo
+lectura (DBeaver, Power BI, Python), mientras un usuario admin carga, transforma y borra. Todo corre con
+`docker compose`, igual en una PC que en la VM. Guía completa: [`docs/mssql.md`](docs/mssql.md).
+
+```bash
+cp .env.example .env                 # contraseñas de sa, admin y lector
+docker compose up -d                 # SQL Server + base, modelo y usuarios
+docker compose run --rm etl python -m scripts.download_data
+docker compose run --rm etl python -m etl.run
+docker compose run --rm etl python -m etl.load_mssql      # termina con un cuadre SQL Server vs parquet
+```
+
 ---
 
 ## Cómo se leen las métricas
@@ -328,14 +342,21 @@ etl/pipeline.py         ETL: dims → facts → cubos → manifest
 etl/run.py              CLI del ETL
 etl/profile.py          diagnóstico previo (acumulado/flujo, PIA/PIM, ubigeo INEI/RENIEC, ceros perdidos)
 etl/validate.py         controles de calidad posteriores
+etl/load_mssql.py       carga el warehouse a SQL Server (claves INT estables, por año, con cuadre)
+docker-compose.yml      SQL Server + inicialización + contenedor del ETL
+Dockerfile              imagen del ETL
+sql/                    base, modelo (esquemas dw/rpt/etl) y usuarios de SQL Server
+docker/mssql-init.sh    aplica sql/*.sql en cada `docker compose up`
 dashboard/data.py       capa de datos (cubos en RAM, consultas, caché, recarga, mapa)
 dashboard/figures.py    gráficos Plotly y formato de cifras
 dashboard/app.py        layout + callbacks (create_app)
 dashboard/assets/       CSS
 scripts/check_spec.py   verifica el warehouse contra docs/modelo_objetivo.md
+scripts/download_data.py baja los parquet del MEF desde el Drive del equipo
 scripts/                datos sintéticos, prueba de carga
 data/ref/TB_UBIGEOS.csv tabla de ubigeos (latitud/longitud)
 docs/modelo_objetivo.md el modelo de datamart del equipo
+docs/mssql.md           guía de SQL Server: usuarios, carga, conexión del equipo, VM de Azure
 docs/diccionarios/      los diccionarios del MEF que usan los tests
 tests/                  80 tests
 ```
