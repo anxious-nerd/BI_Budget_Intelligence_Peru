@@ -307,7 +307,7 @@ La tabla de hechos de gasto almacena los montos presupuestados y ejecutados por 
 
 ## Diseño del Data Warehouse
 
-![Modelo multidimensional](datawarehouse_modelo.png)
+![Modelo multidimensional](Datawarehouse_VF.png)
 
 ## Resumen del modelo
 
