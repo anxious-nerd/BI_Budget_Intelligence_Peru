@@ -362,17 +362,18 @@ Las consultas SQL sobre el Data Warehouse se pueden ejecutar desde CloudBeaver: 
 El dashboard tiene cuatro bloques: **Comparativo**, **Gasto**, **Ingreso** y **Mapa**. Los resultados que se presentan a continuación corresponden, como ejemplo, a la selección del año **2023 con corte a diciembre**. El dashboard permite elegir cualquier año entre 2023 y 2026 y un mes de corte.
 
 ## 10.1 Comparativo
+
+![Comparativo](Comparativo_Figura1.png)
+
 Gráfico de barras agrupadas con la evolución mensual de los ingresos recaudados y los gastos devengados (en millones de soles), que responde a los mismos filtros del resto del dashboard (año, mes de corte, nivel de gobierno, departamento y fuente de financiamiento). Permite ver mes a mes si lo recaudado cubre lo ejecutado.
 
 ## 10.2 Gasto
 
-| Indicador | Valor |
-|---|---|
-| Presupuesto vigente (PIM) | S/ 55.25 mil millones |
-| PIA inicial | S/ 43.87 mil millones |
-| Devengado | S/ 50.99 mil millones |
-| Avance de ejecución (devengado ÷ PIM) | 92.3 % |
-| Girado | S/ 50.89 mil millones (99.8 % de lo devengado según las cifras mostradas) |
+![Gasto_Figura1y2](Gasto_Figura1y2.png)
+
+![Gasto_Figura3y4](Gasto_Figura3y4.png)
+
+![Gasto_Figura5y6](Gasto_Figura5y6.png)
 
 Visualizaciones incluidas:
 
@@ -386,12 +387,7 @@ Visualizaciones incluidas:
 
 ## 10.3 Ingreso
 
-| Indicador | Valor |
-|---|---|
-| Presupuesto de ingresos (PIM) | S/ 14.90 mil millones |
-| PIA inicial | S/ 10.69 mil millones |
-| Recaudado | S/ 16.50 mil millones |
-| Avance de recaudación (recaudado ÷ PIM) | 110.7 % |
+![Ingreso_Figura1y2](Ingreso_Figura1y2.png)
 
 Visualizaciones incluidas:
 
@@ -399,6 +395,8 @@ Visualizaciones incluidas:
 * *Por genérica de ingreso:* PIM frente a recaudado.
 
 ## 10.4 Mapa
+
+![Mapa](Mapa.png)
 
 Mapa de distritos donde cada punto es un distrito, el tamaño representa el monto y el color la métrica elegida. Permite ver dónde se ubican las entidades que gastan y las que recaudan, usando la latitud y longitud de `DIM_UBIGEO`.
 
