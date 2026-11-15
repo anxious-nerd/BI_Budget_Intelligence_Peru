@@ -13,7 +13,7 @@ Herramienta de análisis presupuestal a gran escala construida sobre los datos a
 ## Enlaces del proyecto
 | Dashboard | Presentación | Consultas SQL |
 |---|---|---|
-| [dashboard.pongan-bachata.org](https://dashboard.pongan-bachata.org) | [Canva](https://canva.link/adbv61jc2wj1r1f) | [CloudBeaver](https://dbeaver.pongan-bachata.org) |
+| [Dashboard](https://dashboard.pongan-bachata.org) | [Canva](https://canva.link/adbv61jc2wj1r1f) | [CloudBeaver](https://dbeaver.pongan-bachata.org) |
 
 ## Índice
 
@@ -39,7 +39,7 @@ El presupuesto público del Perú se administra a través del SIAF, el sistema d
 
 El MEF publica esta información como datos abiertos y a través de Consulta Amigable, pero en un formato pensado para el registro y la consulta puntual, no para el análisis comparativo. No hay una vista que permita ver, por ejemplo, cuánto recauda una región frente a lo que ejecuta.
 
-La descentralización fiscal, vigente desde inicios de los 2000, multiplicó el número de unidades ejecutoras y con ello la heterogeneidad de la data. Este proyecto construye un datamart de inteligencia de negocios sobre la data abierta del MEF (ámbito Proyectos de Inversión) para medir, comparar y explicar la ejecución presupuestal pública desde el año 2023 hasta el presente 2026 (con una fecha de corte en Agosto).
+La descentralización fiscal, vigente desde inicios de los 2000, multiplicó el número de unidades ejecutoras y con ello la heterogeneidad de la data. Este proyecto construye un Data warehouse de inteligencia de negocios sobre la data abierta del MEF (ámbito Proyectos de Inversión) para medir, comparar y explicar la ejecución presupuestal pública desde el año 2023 hasta el presente 2026 (con una fecha de corte en Agosto).
 
 # 2. Descripción de la institución
 
@@ -93,7 +93,7 @@ Diseñar e implementar un Data warehouse de inteligencia de negocios que integre
 
 8. *Desarrollar un dashboard* con secciones de gasto, ingreso, comparativo mensual (recaudado vs devengado) y mapa, con filtros comunes de año, mes de corte, nivel de gobierno, departamento y fuente de financiamiento.
 
-9. *Desplegar el datamart y el dashboard* con Docker y publicarlos en línea para su consulta.
+9. *Desplegar el Data warehouse y el dashboard* con Docker y publicarlos en línea para su consulta.
 
 # 6. Marco teórico
 
@@ -409,7 +409,7 @@ El dashboard ya cruza ingreso y gasto con filtros comunes (año, mes de corte, n
 
 * Indicadores adicionales: ejecución per cápita por departamento, comparación de una entidad con otras similares y alertas de baja ejecución o de recaudación por debajo del PIM.
 
-* Automatizar la actualización del datamart conforme el MEF publique nuevos datos, y registrar la fecha de procesamiento.
+* Automatizar la actualización del Data warehouse conforme el MEF publique nuevos datos, y registrar la fecha de procesamiento.
 
 * Mejorar la ubicación del gasto. Si la fuente lo permite, incorporar la ubicación donde se ejecuta el proyecto o la meta, además de la sede de la entidad, para reducir la concentración del gasto en Lima.
 
@@ -441,7 +441,7 @@ La ubicación geográfica corresponde a la sede de la entidad ejecutora, tanto e
 
 * Interpretar la comparación entre ingreso y gasto con cuidado: el gasto de una entidad puede financiarse con transferencias que no figuran como su recaudación.
 * Documentar y mantener actualizados los años cargados y el ámbito (Proyectos de Inversión), para que ningún indicador se interprete como cifra fiscal nacional.
-* Automatizar la actualización del datamart conforme el MEF publique nuevos datos.
+* Automatizar la actualización del Data warehouse conforme el MEF publique nuevos datos.
 * Incorporar la vista comparativa ingreso vs gasto y validar su cuadre por fuente de financiamiento.
 * Usar el dashboard como herramienta de fiscalización ciudadana y de comparación entre entidades similares.
 
