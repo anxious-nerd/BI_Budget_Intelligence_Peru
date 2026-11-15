@@ -385,6 +385,8 @@ Visualizaciones incluidas:
 * *Avance por departamento:* devengado ÷ PIM según la ubicación de la entidad ejecutora.
 * *Por genérica de gasto:* PIM frente a devengado.
 
+El devengado llegó a 60.9 % del PIM en el mes 8. Con un ritmo lineal sería 66.7 %, así que la ejecución va unos 6 puntos por debajo de lo esperado. Agosto fue el mes de mayor devengado (cerca de S/ 28.5 mil millones), mientras que de marzo a junio el nivel se mantuvo estable en torno a S/ 19-20 mil millones. Por otro lado, el PIM (S/ 286.79 mil millones) es 11.4 % mayor que el PIA (S/ 257.56 mil millones), es decir, se añadieron cerca de S/ 29 mil millones durante el año.
+
 ## 10.3 Ingreso
 
 ![Ingreso_Figura1y2](Ingreso_Figura1y2.png)
@@ -393,6 +395,8 @@ Visualizaciones incluidas:
 
 * *Recaudación mensual:* lo recaudado en cada mes y avance acumulado.
 * *Por genérica de ingreso:* PIM frente a recaudado.
+
+Se recaudó el 72.4 % del PIM (S/ 80.65 mil millones de S/ 111.40 mil millones), con una caída de 18.5 % frente a igual corte de 2025. Enero concentra ≈38 % de lo recaudado en el periodo (cerca de S/ 30.5 mil millones). Luego los montos mensuales bajan a S/ 5-8 mil millones.
 
 ## 10.4 Mapa
 
@@ -411,7 +415,7 @@ El dashboard ya cruza ingreso y gasto con filtros comunes (año, mes de corte, n
 
 * Mejorar la ubicación del gasto. Si la fuente lo permite, incorporar la ubicación donde se ejecuta el proyecto o la meta, además de la sede de la entidad, para reducir la concentración del gasto en Lima.
 
-# 11.1 Limitaciones
+# 11.2 Limitaciones
 La ubicación geográfica corresponde a la sede de la entidad ejecutora, tanto en gasto como en ingreso; por eso el gasto de entidades nacionales aparece donde está su sede (casi siempre Lima). La comparación se hace entre recaudado y devengado de las entidades incluidas en los datos abiertos, y no debe leerse como el balance fiscal del país.
 
 # 12. Factibilidad
@@ -427,7 +431,7 @@ La ubicación geográfica corresponde a la sede de la entidad ejecutora, tanto e
 
 * *El dashboard permite comparar ambos lados con los mismos filtros:* Año, mes de corte, nivel de gobierno, departamento y fuente de financiamiento se aplican a las secciones de gasto, ingreso, comparativo y mapa, algo que Consulta Amigable no ofrece, pues presenta ingresos y gastos en módulos distintos.
 
-* *Los indicadores de ejecución y recaudación aportan una lectura rápida:* por ejemplo, en la selección de 2023 con corte a diciembre, el gasto alcanzó un avance de 92.3 % del PIM y la recaudación llegó a 110.7 % de su PIM. Esto muestra que ambos lados se comportan de forma distinta y conviene analizarlos juntos.
+* *Los indicadores de ejecución y recaudación aportan una lectura rápida:* por ejemplo, en una selección de 2023 con corte a diciembre, el gasto alcanzó un avance de 92.3 % del PIM y la recaudación llegó a 110.7 % de su PIM. Esto muestra que ambos lados se comportan de forma distinta y conviene analizarlos juntos.
 
 * *El gráfico comparativo mensual muestra que el devengado supera al recaudado en casi todos los meses:* en la selección mostrada, el recaudado solo supera al devengado en enero; de febrero a julio el gasto devengado es mayor, y en agosto el recaudado casi no aparece (debido a la selección de la fecha de corte de datos de ingreso). Cabe aclarar que esta diferencia no equivale a un déficit fiscal, porque la comparación es entre recaudado y devengado de las entidades, donde el gasto de una entidad puede financiarse con transferencias que no figuran como su recaudación.
 
