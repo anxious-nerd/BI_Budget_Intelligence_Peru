@@ -147,6 +147,11 @@ def _call(client, dep, values):
     return r.status_code, r.get_json()
 
 
+def _server_deps(client):
+    """Callbacks que corren en el servidor (excluye el del navegador que detecta el tema)."""
+    return [d for d in client.get("/_dash-dependencies").get_json() if not d.get("clientside_function")]
+
+
 def _ids(node):
     out = set()
     if isinstance(node, dict):
@@ -164,7 +169,8 @@ def test_layout_and_callback_ids_are_consistent(client):
     assert client.get("/").status_code == 200
     layout_ids = _ids(client.get("/_dash-layout").get_json())
     deps = client.get("/_dash-dependencies").get_json()
-    assert len(deps) == 4
+    assert len(deps) == 5  # 4 del servidor + 1 del navegador (tema claro/oscuro)
+    assert len(_server_deps(client)) == 4
     for d in deps:
         for o in d["output"].strip(".").split("..."):
             assert o.rsplit(".", 1)[0] in layout_ids, o
@@ -182,7 +188,7 @@ def test_layout_and_callback_ids_are_consistent(client):
     ],
 )
 def test_all_callbacks_return_200(client, vals):
-    for dep in client.get("/_dash-dependencies").get_json():
+    for dep in _server_deps(client):
         status, js = _call(client, dep, {"map-metric": "devengado", **vals})
         assert status == 200, (dep["output"][:60], js)
         assert js["response"]
@@ -193,6 +199,30 @@ def test_empty_filter_shows_message_not_error(client):
     gasto = next(d for d in deps if "kpi-gasto" in d["output"])
     _, js = _call(client, gasto, {"f-anio": 2024, "f-mes": 12, "f-nivel": ["NO_EXISTE"]})
     assert js["response"]["g-cadena"]["figure"]["layout"]["annotations"][0]["text"].startswith("Sin datos")
+
+
+@pytest.mark.parametrize("theme", ["light", "dark"])
+def test_figures_follow_theme(client, theme):
+    """El texto de los gráficos usa la tinta del tema (en oscuro, texto claro): si no, no se lee."""
+    from dashboard.figures import THEMES
+
+    deps = _server_deps(client)
+    gasto = next(d for d in deps if "kpi-gasto" in d["output"])
+    _, js = _call(client, gasto, {"f-anio": 2024, "f-mes": 12, "theme": theme})
+    fig = js["response"]["g-funcion"]["figure"]
+    assert fig["layout"]["font"]["color"] == THEMES[theme]["ink"]
+    assert fig["layout"]["hoverlabel"]["bgcolor"] == THEMES[theme]["hover_bg"]
+
+
+def test_map_draws_peru_basemap(client):
+    """El mapa dibuja vecinos, departamentos, contorno y nombres además de los puntos."""
+    deps = _server_deps(client)
+    mapa = next(d for d in deps if "g-mapa" in d["output"])
+    _, js = _call(client, mapa, {"f-anio": 2024, "f-mes": 12, "map-metric": "devengado", "theme": "dark"})
+    data = js["response"]["g-mapa"]["figure"]["data"]
+    assert len(data) == 5  # vecinos, departamentos, contorno, puntos, nombres
+    assert data[1]["fill"] == "toself" and data[3]["mode"] == "markers" and data[4]["mode"] == "text"
+    assert "Loreto" in data[4]["text"]
 
 
 def test_year_change_syncs_months(client):
@@ -254,7 +284,7 @@ def test_spec_store_reads_modes_and_hides_month_zero(spec_store):
 
 def test_spec_app_callbacks_work(wh_spec):
     c = create_app(wh_spec.warehouse).server.test_client()
-    for dep in c.get("/_dash-dependencies").get_json():
+    for dep in _server_deps(c):
         status, js = _call(c, dep, {"f-anio": 2024, "f-mes": 12, "map-metric": "devengado"})
         assert status == 200 and js["response"], dep["output"][:50]
 

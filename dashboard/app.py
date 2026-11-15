@@ -34,7 +34,7 @@ def _field(label: str, control) -> html.Div:
     return html.Div(className="field", children=[html.Label(label), control])
 
 
-def _panel(title: str, graph_id: str, note: str = "", height: int = 300, extra=None) -> html.Section:
+def _panel(title: str, graph_id: str, note: str = "", height: int = 300, extra=None, config=None) -> html.Section:
     kids = [html.H3(title)]
     if note:
         kids.append(html.P(note, className="panel-note"))
@@ -42,7 +42,7 @@ def _panel(title: str, graph_id: str, note: str = "", height: int = 300, extra=N
         kids.append(extra)
     # Altura EXPLÍCITA en px (= la de la figura). Sin ella, un dcc.Graph "responsive" dentro de
     # un contenedor de altura automática colapsa a ~0 px (verificado con captura real).
-    kids.append(dcc.Graph(id=graph_id, config=GRAPH_CFG, style={"height": f"{height}px"}))
+    kids.append(dcc.Graph(id=graph_id, config=config or GRAPH_CFG, style={"height": f"{height}px"}))
     return html.Section(className="panel", children=kids)
 
 
@@ -98,6 +98,8 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
         anio = o["anios"][0]
         mes = o["meses"][anio][-1]
         return html.Div(className="shell", children=[
+            dcc.Location(id="url"),
+            dcc.Store(id="theme", data="light"),  # "light" | "dark": lo fija el navegador (callback del cliente)
             html.Aside(className="rail", children=[
                 html.Div(className="brand", children=[
                     html.H1("Presupuesto público"),
@@ -141,9 +143,11 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
                 html.Header(className="section-head mapa", children=[html.H2("Mapa"), html.P("Dónde se ubican las entidades que gastan y recaudan")]),
                 _panel(
                     "Distritos", "g-mapa",
-                    "Cada punto es un distrito; el tamaño es el monto y el color, la métrica elegida.", 640,
+                    "Cada punto es un distrito; el tamaño es el monto y el color, la métrica elegida. "
+                    "Arrastra para moverte, usa la rueda del mouse para acercarte y doble clic para volver.", 640,
                     extra=dcc.RadioItems(id="map-metric", className="radio", inline=True, value="devengado",
                                          options=[{"label": v, "value": k} for k, v in METRICAS_MAPA.items()]),
+                    config={**GRAPH_CFG, "scrollZoom": True},  # zoom con la rueda solo en el mapa
                 ),
                 html.P(id="nota-mapa", className="note"),
                 html.Footer(className="foot", children=[
@@ -158,7 +162,17 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
 
     # --------------------------------------------------------------- callbacks
     common_inputs = (Input("f-anio", "value"), Input("f-mes", "value"), Input("f-nivel", "value"),
-                     Input("f-depto", "value"), Input("f-fuente", "value"))  # fmt: skip
+                     Input("f-depto", "value"), Input("f-fuente", "value"), Input("theme", "data"))  # fmt: skip
+
+    # Tema del sistema (claro/oscuro), leído en el navegador. Plotly no lee las variables CSS,
+    # así que los gráficos se dibujan con la paleta del tema (dashboard/figures.py: THEMES).
+    app.clientside_callback(
+        """function(_) {
+            return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        }""",
+        Output("theme", "data"),
+        Input("url", "pathname"),
+    )
 
     @app.callback(Output("f-mes", "options"), Output("f-mes", "value"), Input("f-anio", "value"))
     def sync_meses(anio):
@@ -172,16 +186,16 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
         Output("g-entidad", "figure"), Output("g-depto", "figure"), Output("g-generica-gasto", "figure"),
         *common_inputs,
     )  # fmt: skip
-    def update_gasto(anio, mes, niveles, deptos, fuentes):
+    def update_gasto(anio, mes, niveles, deptos, fuentes, theme):
         f = _filters(anio, mes, niveles, deptos, fuentes)
         if f is None or not store.ready:
-            e = F.empty_fig()
+            e = F.empty_fig(theme=theme or "light")
             return "", [], e, e, e, e, e, e, e
         store.refresh()
-        return _gasto(store.version, f)
+        return _gasto(store.version, f, theme or "light")
 
     @lru_cache(maxsize=256)
-    def _gasto(_version, f: Filters):
+    def _gasto(_version, f: Filters, theme: str):
         """Todo el resultado del callback, memoizado por (versión de datos, filtros).
         La versión cambia sola cuando el ETL publica, así que el caché nunca queda viejo."""
         k = store.kpi_gasto(f)
@@ -210,16 +224,17 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
         gen = store.desglose_gasto("cube_gasto_generica", "generica", f)
         if len(gen):
             gen["etiqueta"] = _labels(gen["generica"])
+        P = F.palette(theme)
         return (
             f"Ejecución del presupuesto hasta {MESES[f.mes - 1].lower()} de {f.anio}",
             kpis,
-            F.fig_cadena(k),
-            F.fig_mensual(serie, "devengado", k["pim"], F.GASTO, F.GASTO_L, "Devengado"),
-            F.fig_ranking(func, "etiqueta", "devengado", "pim", F.GASTO, F.GASTO_L),
-            F.fig_ranking(proy, "etiqueta", "devengado", "pim", F.GASTO, F.GASTO_L),
-            F.fig_ranking(ent, "etiqueta", "devengado", "pim", F.GASTO, F.GASTO_L, height=380),
-            F.fig_avance_depto(dep, "etiqueta", f.deptos, codes="departamento"),
-            F.fig_pim_vs_ejec(gen, "etiqueta", "devengado", "Devengado", F.GASTO, F.GASTO_L),
+            F.fig_cadena(k, theme=theme),
+            F.fig_mensual(serie, "devengado", k["pim"], P["gasto"], P["gasto_l"], "Devengado", theme=theme),
+            F.fig_ranking(func, "etiqueta", "devengado", "pim", P["gasto"], P["gasto_l"], theme=theme),
+            F.fig_ranking(proy, "etiqueta", "devengado", "pim", P["gasto"], P["gasto_l"], theme=theme),
+            F.fig_ranking(ent, "etiqueta", "devengado", "pim", P["gasto"], P["gasto_l"], height=380, theme=theme),
+            F.fig_avance_depto(dep, "etiqueta", f.deptos, codes="departamento", theme=theme),
+            F.fig_pim_vs_ejec(gen, "etiqueta", "devengado", "Devengado", P["gasto"], P["gasto_l"], theme=theme),
         )
 
     @app.callback(
@@ -227,19 +242,19 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
         Output("g-mensual-ingreso", "figure"), Output("g-generica-ingreso", "figure"), Output("nota-cuadre", "children"),
         *common_inputs,
     )  # fmt: skip
-    def update_ingreso(anio, mes, niveles, deptos, fuentes):
+    def update_ingreso(anio, mes, niveles, deptos, fuentes, theme):
         f = _filters(anio, mes, niveles, deptos, fuentes)
         if f is None or not store.ready:
-            e = F.empty_fig()
+            e = F.empty_fig(theme=theme or "light")
             return "", [], e, e, ""
         store.refresh()
-        return _ingreso(store.version, f)
+        return _ingreso(store.version, f, theme or "light")
 
     @lru_cache(maxsize=256)
-    def _ingreso(_version, f: Filters):
+    def _ingreso(_version, f: Filters, theme: str):
         k = store.kpi_ingreso(f)
         if not k:
-            e = F.empty_fig()
+            e = F.empty_fig(theme=theme)
             return "", [], e, e, ""
         pim_n, pim_u = F.soles_parts(k["pim"])
         rec_n, rec_u = F.soles_parts(k["recaudado"])
@@ -257,24 +272,25 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
         if pg and pi:
             nota = (f"Control de cuadre: el presupuesto debe estar equilibrado. PIM de ingresos {F.soles(pi)} frente a "
                     f"PIM de gastos {F.soles(pg)} (diferencia {F.pct_txt(abs(pi - pg) / pg)}).")  # fmt: skip
+        P = F.palette(theme)
         return (
             f"Recaudación hasta {MESES[f.mes - 1].lower()} de {f.anio}",
             kpis,
-            F.fig_mensual(serie, "recaudado", k["pim"], F.INGRESO, F.INGRESO_L, "Recaudado"),
-            F.fig_pim_vs_ejec(gen, "etiqueta", "recaudado", "Recaudado", F.INGRESO, F.INGRESO_L),
+            F.fig_mensual(serie, "recaudado", k["pim"], P["ingreso"], P["ingreso_l"], "Recaudado", theme=theme),
+            F.fig_pim_vs_ejec(gen, "etiqueta", "recaudado", "Recaudado", P["ingreso"], P["ingreso_l"], theme=theme),
             nota,
         )
 
     @app.callback(Output("g-mapa", "figure"), Output("nota-mapa", "children"), *common_inputs, Input("map-metric", "value"))
-    def update_mapa(anio, mes, niveles, deptos, fuentes, metrica):
+    def update_mapa(anio, mes, niveles, deptos, fuentes, theme, metrica):
         f = _filters(anio, mes, niveles, deptos, fuentes)
         if f is None or not store.ready or metrica not in METRICAS_MAPA:
-            return F.empty_fig("Sin datos", 640), ""
+            return F.empty_fig("Sin datos", 640, theme or "light"), ""
         store.refresh()
-        return _mapa(store.version, f, metrica)
+        return _mapa(store.version, f, metrica, theme or "light")
 
     @lru_cache(maxsize=128)
-    def _mapa(_version, f: Filters, metrica: str):
+    def _mapa(_version, f: Filters, metrica: str, theme: str):
         df, meta = store.mapa(f, metrica)
         nota = ""
         if meta and meta["sin_coordenadas"]:
@@ -283,7 +299,7 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
             quien = "1 ubicación no tiene coordenadas" if n == 1 else f"{n} ubicaciones no tienen coordenadas"
             nota = (f"{quien} en la tabla de ubigeos y no se {'dibuja' if n == 1 else 'dibujan'} "
                     f"({share * 100:.1f}% del monto). Sus montos sí están en todos los demás gráficos.")  # fmt: skip
-        return F.fig_mapa(df, metrica), nota
+        return F.fig_mapa(df, metrica, theme=theme), nota
 
     return app
 

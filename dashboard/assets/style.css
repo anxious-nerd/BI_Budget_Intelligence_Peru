@@ -5,7 +5,7 @@
   --paper: #f2f4f5;
   --surface: #fbfcfc;
   --ink: #16212b;
-  --muted: #667380;
+  --muted: #5b6874;
   --rule: #d3d9de;
   --gasto: #1f5f74;
   --ingreso: #b5761b;
@@ -14,8 +14,31 @@
   --serif: "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --paper: #11181f; --surface: #172029; --ink: #e6ebef; --muted: #93a1ad; --rule: #2b3843; --gasto: #6fb3c7; --ingreso: #e0a755; }
+  /* --muted más claro que antes (#93a1ad): se leía mal en subtítulos y notas. Debe coincidir con THEMES["dark"] en figures.py */
+  :root { --paper: #11181f; --surface: #172029; --ink: #e6ebef; --muted: #b3bfc9; --rule: #2e3b46; --gasto: #6fb3c7; --ingreso: #e0a755; }
 }
+
+/* Controles de Dash 4 (selectores, radios): traen colores propios (azul marino sobre blanco) que no
+   cambian con el tema. Se redefinen en `body` porque Dash declara los suyos en :root DESPUÉS de este
+   archivo; la declaración más cercana al elemento gana. */
+body {
+  --Dash-Text-Primary: var(--ink);
+  --Dash-Text-Strong: var(--ink);
+  --Dash-Text-Weak: var(--muted);
+  --Dash-Text-Disabled: var(--muted);
+  --Dash-Stroke-Strong: var(--muted);
+  --Dash-Stroke-Weak: var(--rule);
+  --Dash-Fill-Inverse-Strong: var(--surface);
+  --Dash-Fill-Inverse-strong: var(--surface);
+  --Dash-Fill-Interactive-Strong: var(--gasto);
+  --Dash-Fill-Interactive-Weak: color-mix(in srgb, var(--gasto) 10%, transparent);
+  --Dash-Fill-Primary-Hover: color-mix(in srgb, var(--ink) 8%, transparent);
+  --Dash-Fill-Primary-Active: color-mix(in srgb, var(--ink) 14%, transparent);
+  --Dash-Tooltip-Background-Color: var(--surface);
+  --Dash-Tooltip-Border-Color: var(--rule);
+}
+.dash-dropdown, .dash-dropdown-content, .dash-options-list-option { color: var(--ink); }
+.dash-dropdown-placeholder { color: var(--muted); }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.45; }
 h1, h2, h3, p { margin: 0; }
@@ -29,7 +52,7 @@ h1, h2, h3, p { margin: 0; }
 .brand h1 { font-family: var(--serif); font-weight: 600; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; }
 .brand p { color: var(--muted); margin-top: 4px; font-size: 13px; }
 .field { margin-bottom: 16px; }
-.field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
+.field > label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
 .rail-note { color: var(--muted); font-size: 12px; margin-top: 14px; line-height: 1.5; }
 
 /* ---------- encabezados de sección ---------- */
@@ -79,5 +102,5 @@ h1, h2, h3, p { margin: 0; }
 .section-head.mapa { margin-top: 56px; border-bottom-color: var(--ink); }
 .section-head.mapa h2 { color: var(--ink); }
 .radio { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 6px 0 4px; }
-.radio label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; }
+.radio label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--ink); }
 .radio input { accent-color: var(--gasto); }
