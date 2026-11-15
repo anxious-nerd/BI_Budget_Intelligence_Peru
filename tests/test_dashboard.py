@@ -92,7 +92,7 @@ def test_cache_hits_and_empty_filters(store):
     store.kpi_gasto(f)
     assert len(store._cache) == n  # segunda llamada salió del caché
     z = store.kpi_gasto(Filters(2024, 6, niveles=("NO_EXISTE",)))
-    assert z["pim"] == 0 and z["devengado"] == 0  # filtro sin filas: ceros, no error
+    assert z["pim"] == 0 and z["devengado"] == 0  # filtro sin filas, no error
 
 
 # ------------------------------------------------------------------ rankings y mapa
@@ -169,8 +169,8 @@ def test_layout_and_callback_ids_are_consistent(client):
     assert client.get("/").status_code == 200
     layout_ids = _ids(client.get("/_dash-layout").get_json())
     deps = client.get("/_dash-dependencies").get_json()
-    assert len(deps) == 5  # 4 del servidor + 1 del navegador (tema claro/oscuro)
-    assert len(_server_deps(client)) == 4
+    assert len(deps) == 6  # 5 del servidor + 1 del navegador (tema claro/oscuro)
+    assert len(_server_deps(client)) == 5
     for d in deps:
         for o in d["output"].strip(".").split("..."):
             assert o.rsplit(".", 1)[0] in layout_ids, o
@@ -192,6 +192,20 @@ def test_all_callbacks_return_200(client, vals):
         status, js = _call(client, dep, {"map-metric": "devengado", **vals})
         assert status == 200, (dep["output"][:60], js)
         assert js["response"]
+
+
+def test_comparativo_ingreso_gasto(client):
+    """El comparativo dibuja dos series mensuales con los filtros compartidos."""
+    deps = _server_deps(client)
+    comparativo = next(d for d in deps if "g-comparativo" in d["output"])
+    status, js = _call(client, comparativo, {"f-anio": 2024, "f-mes": 6, "theme": "light"})
+
+    assert status == 200
+    fig = js["response"]["g-comparativo"]["figure"]
+    assert len(fig["data"]) == 2
+    assert [serie["name"] for serie in fig["data"]] == ["Ingresos recaudados", "Gastos devengados"]
+    assert list(fig["data"][0]["x"]) == ["Ene", "Feb", "Mar", "Abr", "May", "Jun"]
+    assert fig["layout"]["barmode"] == "group"
 
 
 def test_empty_filter_shows_message_not_error(client):

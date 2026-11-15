@@ -116,6 +116,17 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
                 html.P(f"Datos procesados: {built_at()}", className="rail-note"),
             ]),
             html.Main(className="main", children=[
+                html.Header(className="section-head comparativo", children=[
+                    html.H2("Comparativo"),
+                    html.P("Ingresos recaudados frente a gastos devengados"),
+                ]),
+                _panel(
+                    "Evolución mensual de ingresos y gastos",
+                    "g-comparativo",
+                    "Comparación de los ingresos recaudados y los gastos devengados por mes, según los filtros seleccionados.",
+                    360,
+                ),
+
                 html.Header(className="section-head", children=[html.H2("Gasto"), html.P(id="sub-gasto")]),
                 html.Div(id="kpi-gasto", className="ledger"),
                 html.Div(className="grid g2", children=[
@@ -178,6 +189,23 @@ def create_app(warehouse: Path | str | None = None) -> Dash:
     def sync_meses(anio):
         meses = store.options()["meses"].get(int(anio), []) if anio else []
         return [{"label": MESES[m - 1], "value": m} for m in meses], (meses[-1] if meses else None)
+
+    @app.callback(Output("g-comparativo", "figure"), *common_inputs)
+    def update_comparativo(anio, mes, niveles, deptos, fuentes, theme):
+        f = _filters(anio, mes, niveles, deptos, fuentes)
+        if f is None or not store.ready:
+            return F.empty_fig(height=360, theme=theme or "light")
+        store.refresh()
+        return _comparativo(store.version, f, theme or "light")
+
+    @lru_cache(maxsize=256)
+    def _comparativo(_version, f: Filters, theme: str):
+        """Compara los flujos mensuales de recaudación y devengado bajo los mismos filtros."""
+        if "cube_ingreso_base" not in store._tables:
+            return F.empty_fig("No hay datos de ingresos disponibles", height=360, theme=theme)
+        gasto = store.serie("cube_gasto_base", f, ("devengado",))
+        ingreso = store.serie("cube_ingreso_base", f, ("recaudado",))
+        return F.fig_comparativo(ingreso, gasto, theme=theme)
 
     @app.callback(
         Output("sub-gasto", "children"), Output("kpi-gasto", "children"),
